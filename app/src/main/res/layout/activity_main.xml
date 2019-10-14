@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="on_refresh_listener"
+            type="com.solkismet.urbandictionary.ui.contracts.SearchEventHandler.OnRefreshListener" />
+
+        <variable
+            name="on_sort_by_thumbs_up_listener"
+            type="com.solkismet.urbandictionary.ui.contracts.SearchEventHandler.OnSortByThumbsUpClicked"/>
+
+        <variable
+            name="on_sort_by_thumbs_down_listener"
+            type="com.solkismet.urbandictionary.ui.contracts.SearchEventHandler.OnSortByThumbsDownClicked"/>
+
+        <variable
+            name="view_model"
+            type="com.solkismet.urbandictionary.ui.viewmodels.SearchViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.solkismet.urbandictionary.ui.activities.SearchActivity">
+
+        <ImageView
+            android:id="@+id/sort_search_thumbs_down_imageview"
+            android:layout_width="@dimen/image_button_width"
+            android:layout_height="@dimen/image_button_height"
+            android:layout_margin="@dimen/view_item_margin"
+            android:src="@drawable/ic_thumb_down_24px"
+            android:onClick="@{(v) -> on_sort_by_thumbs_down_listener.sortByThumbsDown()}"
+            android:background="?actionBarItemBackground"
+            android:tint="@color/colorPrimary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/search_view_parent"
+            app:layout_constraintBottom_toBottomOf="@id/search_view_parent"/>
+
+        <ImageView
+            android:id="@+id/sort_search_thumbs_up_imageview"
+            android:layout_width="@dimen/image_button_width"
+            android:layout_height="@dimen/image_button_height"
+            android:layout_margin="@dimen/view_item_margin"
+            android:src="@drawable/ic_thumb_up_24px"
+            android:onClick="@{(v) -> on_sort_by_thumbs_up_listener.sortByThumbsUp()}"
+            android:background="?actionBarItemBackground"
+            android:tint="@color/colorPrimary"
+            app:layout_constraintEnd_toStartOf="@id/sort_search_thumbs_down_imageview"
+            app:layout_constraintTop_toTopOf="@id/search_view_parent"
+            app:layout_constraintBottom_toBottomOf="@id/search_view_parent"/>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/search_view_parent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/view_item_margin"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/sort_search_thumbs_up_imageview"
+            app:layout_constraintTop_toTopOf="parent"
+            app:cardCornerRadius="@dimen/search_view_corner_radius">
+
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/search_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/refresh_search_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/search_view_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:setRefreshListener="@{on_refresh_listener}">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/search_list_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:requiresFadingEdge="vertical"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

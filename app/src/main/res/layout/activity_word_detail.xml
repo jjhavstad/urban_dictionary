@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+            name="view_model"
+            type="com.solkismet.urbandictionary.ui.viewmodels.WordDetailViewModel" />
+    </data>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/detail_item_thumbs_up_imageview"
+                android:layout_width="@dimen/image_button_width"
+                android:layout_height="@dimen/image_button_height"
+                android:layout_margin="@dimen/view_item_margin"
+                android:src="@drawable/ic_thumb_up_24px"
+                app:layout_constraintEnd_toStartOf="@id/detail_item_thumbs_up_number_textView"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:id="@+id/detail_item_thumbs_up_number_textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/view_item_margin"
+                android:text="@{String.valueOf(view_model.searchResultItem.thumbsUp)}"
+                app:layout_constraintEnd_toStartOf="@id/detail_item_thumbs_down_imageview"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <ImageView
+                android:id="@+id/detail_item_thumbs_down_imageview"
+                android:layout_width="@dimen/image_button_width"
+                android:layout_height="@dimen/image_button_height"
+                android:layout_margin="@dimen/view_item_margin"
+                android:src="@drawable/ic_thumb_down_24px"
+                app:layout_constraintEnd_toStartOf="@id/detail_item_thumbs_down_number_textview"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:id="@+id/detail_item_thumbs_down_number_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/view_item_margin"
+                android:text="@{String.valueOf(view_model.searchResultItem.thumbsDown)}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:id="@+id/detail_item_definition_title_textview"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/view_item_margin"
+                style="@style/WordMain"
+                android:text="@string/detail_definition_title"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/detail_item_thumbs_up_imageview"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/detail_item_word_description_rating_boundary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="detail_item_definition_title_textview,
+                    detail_item_definition_title_textview"/>
+
+            <TextView
+                android:id="@+id/detail_item_definition_textview"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/view_item_margin"
+                android:text="@{view_model.searchResultItem.definition}"
+                style="@style/StandardText"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/detail_item_word_description_rating_boundary"/>
+
+            <TextView
+                android:id="@+id/detail_item_example_title_textview"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/view_item_margin"
+                android:text="@string/detail_examples_title"
+                style="@style/WordMain"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/detail_item_definition_textview"/>
+
+            <TextView
+                android:id="@+id/detail_item_example_textview"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/view_item_margin"
+                android:text="@{view_model.searchResultItem.example}"
+                style="@style/StandardText"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/detail_item_example_title_textview"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/detail_item_sound_sample_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/view_item_margin"
+                android:orientation="vertical"
+                android:requiresFadingEdge="vertical"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/detail_item_example_textview"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+</layout>

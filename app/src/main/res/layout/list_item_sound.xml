@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="view_model"
+            type="com.solkismet.urbandictionary.ui.viewmodels.SoundViewModel"/>
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/play_sound_icon"
+            android:layout_width="@dimen/image_button_width"
+            android:layout_height="@dimen/image_button_height"
+            android:onClick="@{(v) -> view_model.playSound()}"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_margin="@dimen/view_item_margin"
+            android:src="@drawable/ic_volume_up_24px"
+            android:tint="@color/colorPrimary"
+            android:background="?actionBarItemBackground"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:id="@+id/play_sound_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@{view_model.soundFileText}"
+            android:onClick="@{(v) -> view_model.playSound()}"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_margin="@dimen/view_item_margin"
+            android:textColor="@color/colorPrimary"
+            android:background="?actionBarItemBackground"
+            app:layout_constraintStart_toEndOf="@id/play_sound_icon"
+            app:layout_constraintTop_toTopOf="@id/play_sound_icon"
+            app:layout_constraintBottom_toBottomOf="@id/play_sound_icon"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>
