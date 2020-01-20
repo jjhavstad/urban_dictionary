@@ -30,7 +30,7 @@ class SearchActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         initViewModel()
         initDataBinding()
-        initSearchQueryListener()
+        initSearchBar()
     }
 
     override fun onStop() {
@@ -142,7 +142,7 @@ class SearchActivity : AppCompatActivity(),
         binding?.onSortByThumbsDownListener = this
     }
 
-    private fun initSearchQueryListener() {
+    private fun initSearchBar() {
         setSearchResult(null)
 
         binding?.searchView?.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
@@ -162,6 +162,10 @@ class SearchActivity : AppCompatActivity(),
                 return false
             }
         })
+
+        binding?.searchView?.setOnClickListener {
+            (it as SearchView).isIconified = false
+        }
     }
 
     private fun setSearchResult(data: SearchResult?) {
