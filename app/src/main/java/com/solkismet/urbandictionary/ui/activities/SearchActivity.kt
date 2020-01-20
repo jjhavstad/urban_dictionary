@@ -15,7 +15,7 @@ import com.solkismet.urbandictionary.data.models.WordDetail
 import com.solkismet.urbandictionary.databinding.ActivityMainBinding
 import com.solkismet.urbandictionary.ui.adapters.SearchListAdapter
 import com.solkismet.urbandictionary.ui.extensions.withColor
-import com.solkismet.urbandictionary.ui.viewmodels.SearchViewModel
+import com.solkismet.urbandictionary.viewmodels.SearchViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 
 class SearchActivity : AppCompatActivity(),

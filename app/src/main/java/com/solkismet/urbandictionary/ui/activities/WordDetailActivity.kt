@@ -14,7 +14,7 @@ import com.solkismet.urbandictionary.R
 import com.solkismet.urbandictionary.data.models.WordDetail
 import com.solkismet.urbandictionary.databinding.ActivityWordDetailBinding
 import com.solkismet.urbandictionary.ui.adapters.SoundListAdapter
-import com.solkismet.urbandictionary.ui.viewmodels.WordDetailViewModel
+import com.solkismet.urbandictionary.viewmodels.WordDetailViewModel
 import java.io.IOException
 import java.lang.IllegalArgumentException
 import java.lang.IllegalStateException

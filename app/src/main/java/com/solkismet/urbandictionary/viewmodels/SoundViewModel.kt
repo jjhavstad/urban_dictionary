@@ -1,4 +1,4 @@
-package com.solkismet.urbandictionary.ui.viewmodels
+package com.solkismet.urbandictionary.viewmodels
 
 import androidx.lifecycle.ViewModel
 

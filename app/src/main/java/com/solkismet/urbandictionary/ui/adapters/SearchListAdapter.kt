@@ -10,8 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.solkismet.urbandictionary.R
 import com.solkismet.urbandictionary.data.models.WordDetail
 import com.solkismet.urbandictionary.databinding.ListItemSearchBinding
-import com.solkismet.urbandictionary.ui.viewmodels.SearchViewModel
-import com.solkismet.urbandictionary.ui.viewmodels.WordDetailViewModel
+import com.solkismet.urbandictionary.viewmodels.SearchViewModel
+import com.solkismet.urbandictionary.viewmodels.WordDetailViewModel
 
 class SearchListAdapter(private val onItemClicked: SearchViewModel.OnItemClicked) :
     ListAdapter<WordDetail, SearchListAdapter.ViewHolder>(WordDetailDiff()) {

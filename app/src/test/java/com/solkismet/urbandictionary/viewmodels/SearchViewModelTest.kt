@@ -1,4 +1,4 @@
-package com.solkismet.urbandictionary.ui.viewmodels
+package com.solkismet.urbandictionary.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.gson.Gson

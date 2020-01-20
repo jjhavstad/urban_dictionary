@@ -5,7 +5,7 @@
     <data>
         <variable
             name="view_model"
-            type="com.solkismet.urbandictionary.ui.viewmodels.WordDetailViewModel" />
+            type="com.solkismet.urbandictionary.viewmodels.WordDetailViewModel" />
     </data>
 
     <androidx.cardview.widget.CardView

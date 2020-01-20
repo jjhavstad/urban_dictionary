@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.solkismet.urbandictionary.R
-import com.solkismet.urbandictionary.ui.viewmodels.SoundViewModel
+import com.solkismet.urbandictionary.viewmodels.SoundViewModel
 import kotlinx.android.synthetic.main.list_item_sound.view.*
 
 class SoundListAdapter(

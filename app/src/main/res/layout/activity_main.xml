@@ -6,19 +6,19 @@
     <data>
         <variable
             name="on_refresh_listener"
-            type="com.solkismet.urbandictionary.ui.viewmodels.SearchViewModel.OnRefreshListener" />
+            type="com.solkismet.urbandictionary.viewmodels.SearchViewModel.OnRefreshListener" />
 
         <variable
             name="on_sort_by_thumbs_up_listener"
-            type="com.solkismet.urbandictionary.ui.viewmodels.SearchViewModel.OnSortByThumbsUpClicked"/>
+            type="com.solkismet.urbandictionary.viewmodels.SearchViewModel.OnSortByThumbsUpClicked"/>
 
         <variable
             name="on_sort_by_thumbs_down_listener"
-            type="com.solkismet.urbandictionary.ui.viewmodels.SearchViewModel.OnSortByThumbsDownClicked"/>
+            type="com.solkismet.urbandictionary.viewmodels.SearchViewModel.OnSortByThumbsDownClicked"/>
 
         <variable
             name="view_model"
-            type="com.solkismet.urbandictionary.ui.viewmodels.SearchViewModel" />
+            type="com.solkismet.urbandictionary.viewmodels.SearchViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent"
