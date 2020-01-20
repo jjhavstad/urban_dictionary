@@ -49,9 +49,11 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
         mediaPlayer.release()
     }
 
-    override fun playSound(url: String,
-                           onPlaySoundStarted: (recyclerView: RecyclerView) -> Unit,
-                           onPlaySoundStopped: (recyclerView: RecyclerView) -> Unit) {
+    override fun playSound(
+        url: String,
+        onPlaySoundStarted: (recyclerView: RecyclerView) -> Unit,
+        onPlaySoundStopped: (recyclerView: RecyclerView) -> Unit
+    ) {
         try {
             mediaPlayer.apply {
                 reset()

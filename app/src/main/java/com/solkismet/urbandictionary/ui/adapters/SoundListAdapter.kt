@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.solkismet.urbandictionary.R
-import com.solkismet.urbandictionary.viewmodels.SoundViewModel
 import com.solkismet.urbandictionary.viewmodels.WordDetailViewModel
 import kotlinx.android.synthetic.main.list_item_sound.view.*
 
@@ -79,19 +78,17 @@ class SoundListAdapter(
             false
         )
 
-        val viewModel = SoundViewModel()
-        return ViewHolder(view, viewModel)
+        return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         getItem(position)?.let { _soundUrl ->
-            holder.soundViewModel.soundUrl = _soundUrl
             holder.itemView.play_sound_text.text = holder.itemView.context.getString(R.string.audio_file, position+1)
             holder.itemView.play_sound_icon.setOnClickListener {
-                playSound(holder, position)
+                viewModel.playSound(_soundUrl, position)
             }
             holder.itemView.play_sound_text.setOnClickListener {
-                playSound(holder, position)
+                viewModel.playSound(_soundUrl, position)
             }
         }
     }
@@ -101,12 +98,6 @@ class SoundListAdapter(
             recyclerView.findViewHolderForAdapterPosition(i)?.let { _viewHolder ->
                 unSelectSoundListItem(_viewHolder.itemView)
             }
-        }
-    }
-
-    private fun playSound(holder: ViewHolder, position: Int) {
-        holder.soundViewModel.soundUrl?.let { _soundUrl ->
-            viewModel.playSound(_soundUrl, position)
         }
     }
 
@@ -123,8 +114,7 @@ class SoundListAdapter(
     }
 
     class ViewHolder(
-        itemView: View,
-        val soundViewModel: SoundViewModel
+        itemView: View
     ) : RecyclerView.ViewHolder(itemView)
 
     class SoundUriDiff : DiffUtil.ItemCallback<String>() {
