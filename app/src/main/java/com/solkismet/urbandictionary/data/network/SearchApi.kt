@@ -6,9 +6,11 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Query
 
-interface Api {
+interface SearchApi {
     @GET("/define")
-    fun search(@Header("x-rapidapi-host") apiHost: String,
-               @Header("x-rapidapi-key") apiKey: String,
-               @Query("term") term: String): Single<SearchResult>
+    fun search(
+        @Header("x-rapidapi-host") apiHost: String,
+        @Header("x-rapidapi-key") apiKey: String,
+        @Query("term") term: String
+    ): Single<SearchResult>
 }

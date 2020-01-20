@@ -74,7 +74,7 @@ class SearchActivityTest {
                             0
                         )
                     ),
-                    1
+                    0
                 ),
                 isDisplayed()
             )

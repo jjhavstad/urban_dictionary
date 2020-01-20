@@ -1,39 +1,47 @@
 package com.solkismet.urbandictionary.ui.viewmodels
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.gson.Gson
+import com.solkismet.urbandictionary.data.di.networkModule
 import com.solkismet.urbandictionary.data.models.SearchResult
-import com.solkismet.urbandictionary.data.network.Service
-import com.solkismet.urbandictionary.ui.contracts.SearchEventHandler
-import io.reactivex.Single
+import com.solkismet.urbandictionary.data.network.SearchService
+import io.reactivex.Flowable
+import junit.framework.Assert.assertEquals
+import junit.framework.Assert.assertNotNull
+import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.any
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.test.KoinTest
+import org.koin.test.mock.declareMock
 import org.mockito.ArgumentMatchers.anyString
+import org.mockito.BDDMockito.given
 import org.mockito.Mock
 import org.mockito.Mockito.*
-import org.powermock.api.mockito.PowerMockito
-import org.powermock.core.classloader.annotations.PowerMockIgnore
-import org.powermock.core.classloader.annotations.PrepareForTest
-import org.powermock.modules.junit4.PowerMockRunner
+import org.mockito.junit.MockitoJUnitRunner
 
-@RunWith(PowerMockRunner::class)
-@PrepareForTest(Service::class)
-@PowerMockIgnore("okhttp3.*")
-class SearchViewModelTest {
-    @Mock private lateinit var searchView: SearchEventHandler.SearchView
-    @Mock private lateinit var service: Service
-
-    private val gson = Gson()
+@RunWith(MockitoJUnitRunner::class)
+class SearchViewModelTest : KoinTest {
+    @Rule
+    @JvmField
+    val instantExecutorRule = InstantTaskExecutorRule()
+    @Mock private lateinit var onSearchAction: SearchViewModel.OnSearchAction
     private lateinit var viewModel: SearchViewModel
+    private val gson = Gson()
 
     @Before
     fun initialize() {
-        PowerMockito.mockStatic(Service::class.java)
-        PowerMockito.whenNew(Service::class.java)
-            .withAnyArguments()
-            .thenReturn(service)
-        viewModel = SearchViewModel(searchView, service)
+        startKoin { modules(networkModule) }
+        onSearchAction = mock(SearchViewModel.OnSearchAction::class.java)
+        viewModel = SearchViewModel(onSearchAction)
+    }
+
+    @After
+    fun shutdown() {
+        stopKoin()
     }
 
     @Test
@@ -44,18 +52,18 @@ class SearchViewModelTest {
         viewModel.processSearchQuery("")
 
         //THEN
-        verify(searchView).clearSort()
+        verify(onSearchAction).clearSort()
     }
 
     @Test
-    fun `processSearchQuery SHOULD call setSearchResult WHEN search query is empty`() {
+    fun `processSearchQuery SHOULD return null result WHEN search query is empty`() {
         //GIVEN
 
         //WHEN
         viewModel.processSearchQuery("")
 
         //THEN
-        verify(searchView).setSearchResult(any())
+        assertEquals(viewModel.searchResult.value, null)
     }
 
     @Test
@@ -63,16 +71,16 @@ class SearchViewModelTest {
         //GIVEN
         val searchTerm = "sweet"
         val successfulResponse = createSuccessfulSearchResponse()
-        `when`(service.search(anyString())).thenAnswer {
-            return@thenAnswer Single.just(successfulResponse)
+        declareMock<SearchService> {
+            given(this.search(anyString())).willReturn(Flowable.just(successfulResponse))
         }
 
         //WHEN
         viewModel.processSearchQuery(searchTerm)
 
         //THEN
-        verify(searchView).clearSort()
-        verify(searchView).setIsRefreshing(true)
+        verify(onSearchAction).clearSort()
+        verify(onSearchAction).setIsRefreshing(true)
     }
 
     @Test
@@ -80,30 +88,34 @@ class SearchViewModelTest {
         //GIVEN
         val searchTerm = "sweet"
         val successfulResponse = createSuccessfulSearchResponse()
-        `when`(service.search(anyString())).thenAnswer {
-            return@thenAnswer Single.just(successfulResponse)
+        declareMock<SearchService> {
+            given(this.search(anyString())).willReturn(Flowable.just(successfulResponse))
         }
 
         //WHEN
         viewModel.processSearchQuery(searchTerm)
 
         //THEN
-        verify(searchView).setIsRefreshing(true)
+        verify(onSearchAction).setIsRefreshing(true)
     }
 
     @Test
-    fun `processSearchQuery SHOULD call setSearchResult WHEN search query is not empty AND search api returns a valid response`() {
+    fun `processSearchQuery SHOULD return 1 element WHEN search query is not empty AND search api returns a valid response`() {
         //GIVEN
         val successfulResponse = createSuccessfulSearchResponse()
-        `when`(service.search(anyString())).thenAnswer {
-            return@thenAnswer Single.just(successfulResponse)
+        declareMock<SearchService> {
+            given(this.search(anyString())).willReturn(Flowable.just(successfulResponse))
         }
 
         //WHEN
         viewModel.processSearchQuery("sweet")
 
         //THEN
-        verify(searchView).setSearchResult(successfulResponse)
+        assertNotNull(viewModel.searchResult.value)
+        assertNotNull(viewModel.searchResult.value?.list)
+        assertEquals(viewModel.searchResult.value?.list?.size, 1)
+        assertNotNull(viewModel.searchResult.value?.list?.get(0))
+        assertEquals(viewModel.searchResult.value?.list?.get(0)?.word, "Sweet")
     }
 
     @Test
@@ -111,38 +123,38 @@ class SearchViewModelTest {
         //GIVEN
         val searchTerm = "sweet"
         val successfulResponse = createSuccessfulSearchResponse()
-        `when`(service.search(anyString())).thenAnswer {
-            return@thenAnswer Single.just(successfulResponse)
+        declareMock<SearchService> {
+            given(this.search(anyString())).willReturn(Flowable.just(successfulResponse))
         }
 
         //WHEN
         viewModel.processSearchQuery(searchTerm)
 
         //THEN
-        verify(searchView).setIsRefreshing(false)
+        verify(onSearchAction).setIsRefreshing(false)
     }
 
     @Test
     fun `processSearchQuery SHOULD call setSearchResult WHEN search query is not empty AND search api returns an error`() {
         //GIVEN
         val throwable = mock(Throwable::class.java)
-        `when`(service.search(anyString())).thenAnswer {
-            Single.error<SearchResult>(throwable)
+        declareMock<SearchService> {
+            given(this.search(anyString())).willReturn(Flowable.error(throwable))
         }
 
         //WHEN
         viewModel.processSearchQuery("sweet")
 
         //THEN
-        verify(searchView).showError()
+        verify(onSearchAction).showError()
     }
 
     @Test
     fun `refreshSearch SHOULD call searchTerm WHEN current search term is not empty`() {
         //GIVEN
         val successfulResponse = createSuccessfulSearchResponse()
-        `when`(service.search(anyString())).thenAnswer {
-            return@thenAnswer Single.just(successfulResponse)
+        declareMock<SearchService> {
+            given(this.search(anyString())).willReturn(Flowable.just(successfulResponse))
         }
 
         //WHEN
@@ -150,8 +162,8 @@ class SearchViewModelTest {
         viewModel.refreshSearch()
 
         //THEN
-        verify(searchView, times(2)).clearSort()
-        verify(searchView, times(2)).setIsRefreshing(true)
+        verify(onSearchAction, times(2)).clearSort()
+        verify(onSearchAction, times(2)).setIsRefreshing(true)
     }
 
     private fun createSuccessfulSearchResponse(): SearchResult {

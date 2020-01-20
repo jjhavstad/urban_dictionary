@@ -6,15 +6,15 @@
     <data>
         <variable
             name="on_refresh_listener"
-            type="com.solkismet.urbandictionary.ui.contracts.SearchEventHandler.OnRefreshListener" />
+            type="com.solkismet.urbandictionary.ui.viewmodels.SearchViewModel.OnRefreshListener" />
 
         <variable
             name="on_sort_by_thumbs_up_listener"
-            type="com.solkismet.urbandictionary.ui.contracts.SearchEventHandler.OnSortByThumbsUpClicked"/>
+            type="com.solkismet.urbandictionary.ui.viewmodels.SearchViewModel.OnSortByThumbsUpClicked"/>
 
         <variable
             name="on_sort_by_thumbs_down_listener"
-            type="com.solkismet.urbandictionary.ui.contracts.SearchEventHandler.OnSortByThumbsDownClicked"/>
+            type="com.solkismet.urbandictionary.ui.viewmodels.SearchViewModel.OnSortByThumbsDownClicked"/>
 
         <variable
             name="view_model"

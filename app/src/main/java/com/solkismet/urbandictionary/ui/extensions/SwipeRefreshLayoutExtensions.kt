@@ -2,10 +2,10 @@ package com.solkismet.urbandictionary.ui.extensions
 
 import androidx.databinding.BindingAdapter
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.solkismet.urbandictionary.ui.contracts.SearchEventHandler
+import com.solkismet.urbandictionary.ui.viewmodels.SearchViewModel
 
 @BindingAdapter("setRefreshListener")
-fun SwipeRefreshLayout.onRefresh(onRefreshListener: SearchEventHandler.OnRefreshListener) {
+fun SwipeRefreshLayout.onRefresh(onRefreshListener: SearchViewModel.OnRefreshListener) {
     setOnRefreshListener {
         onRefreshListener.refreshSearch()
     }
