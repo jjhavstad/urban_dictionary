@@ -9,17 +9,17 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.RecyclerView
 import com.solkismet.urbandictionary.R
 import com.solkismet.urbandictionary.data.models.WordDetail
 import com.solkismet.urbandictionary.databinding.ActivityWordDetailBinding
 import com.solkismet.urbandictionary.ui.adapters.SoundListAdapter
-import com.solkismet.urbandictionary.ui.viewmodels.SoundViewModel
 import com.solkismet.urbandictionary.ui.viewmodels.WordDetailViewModel
 import java.io.IOException
 import java.lang.IllegalArgumentException
 import java.lang.IllegalStateException
 
-class WordDetailActivity : AppCompatActivity(), SoundViewModel.OnPlaySound {
+class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAction {
 
     companion object {
         private const val DATA_KEY = "data_key"
@@ -81,6 +81,13 @@ class WordDetailActivity : AppCompatActivity(), SoundViewModel.OnPlaySound {
                 Log.e("MediaPlayer", "Caught IOException: \n${e.stackTrace.joinToString("\n")}")
             }
             mediaPlayer.release()
+        }
+    }
+
+    override fun stopAll(updateList: (recyclerView: RecyclerView) -> Unit) {
+        mediaPlayer.stop()
+        binding?.detailItemSoundSampleList?.let { _recyclerView ->
+            updateList(_recyclerView)
         }
     }
 

@@ -6,31 +6,38 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.solkismet.urbandictionary.R
-import com.solkismet.urbandictionary.databinding.ListItemSoundBinding
 import com.solkismet.urbandictionary.ui.viewmodels.SoundViewModel
+import kotlinx.android.synthetic.main.list_item_sound.view.*
 
 class SoundListAdapter(
     application: Application,
-    private val onPlaySound: SoundViewModel.OnPlaySound
+    private val onSoundClickAction: OnSoundClickAction
 ) : RecyclerView.Adapter<SoundListAdapter.ViewHolder>() {
+    interface OnSoundClickAction {
+        fun playSound(
+            url: String,
+            onPlaySoundStarted: () -> Unit,
+            onPlaySoundStopped: () -> Unit
+        )
+        fun stopAll(updateList: (recyclerView: RecyclerView) -> Unit)
+    }
+
     var data: List<String>? = null
         set(value) {
             field = value
             notifyDataSetChanged()
         }
 
-    val unselectedTextColor by lazy {
+    private val unselectedTextColor by lazy {
         ContextCompat.getColor(
-
             application.applicationContext.applicationContext,
             R.color.colorPrimary
         )
     }
 
-    val selectedTextColor by lazy {
+    private val selectedTextColor by lazy {
         ContextCompat.getColor(
             application.applicationContext.applicationContext,
             R.color.colorAccent
@@ -38,29 +45,14 @@ class SoundListAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding: ListItemSoundBinding =
-            DataBindingUtil.inflate(
-                LayoutInflater.from(parent.context),
-                R.layout.list_item_sound,
-                parent,
-                false
-            )
-        binding.viewModel = SoundViewModel(
-            onPlaySound,
-            object: SoundViewModel.OnUpdateSoundListItem {
-                override fun selectSoundListItem() {
-                    binding.playSoundIcon.setColorFilter(selectedTextColor)
-                    binding.playSoundText.setTextColor(selectedTextColor)
-                    binding.playSoundText.typeface = Typeface.DEFAULT_BOLD
-                }
-                override fun unSelectSoundListItem() {
-                    binding.playSoundIcon.setColorFilter(unselectedTextColor)
-                    binding.playSoundText.setTextColor(unselectedTextColor)
-                    binding.playSoundText.typeface = Typeface.DEFAULT
-                }
-            }
+        val view = LayoutInflater.from(parent.context).inflate(
+            R.layout.list_item_sound,
+            parent,
+            false
         )
-        return ViewHolder(binding.root, binding)
+
+        val viewModel = SoundViewModel()
+        return ViewHolder(view, viewModel)
     }
 
     override fun getItemCount(): Int {
@@ -69,14 +61,58 @@ class SoundListAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         data?.let { _dataList ->
-            val soundFileText = holder.binding.root.context.getString(R.string.audio_file, position+1)
-            holder.binding.viewModel?.setSoundFileText(soundFileText)
-            holder.binding.viewModel?.soundUrl = _dataList[position]
+            holder.soundViewModel.soundUrl = _dataList[position]
+            holder.itemView.play_sound_text.text = holder.itemView.context.getString(R.string.audio_file, position+1)
+            holder.itemView.play_sound_icon.setOnClickListener {
+                playSound(holder)
+            }
+            holder.itemView.play_sound_text.setOnClickListener {
+                playSound(holder)
+            }
         }
+    }
+
+    private fun stopAll(recyclerView: RecyclerView) {
+        data?.let { _dataList ->
+            for (i in _dataList.indices) {
+                recyclerView.findViewHolderForAdapterPosition(i)?.let { _viewHolder ->
+                    unSelectSoundListItem(_viewHolder.itemView)
+                }
+            }
+        }
+    }
+
+    private fun playSound(holder: ViewHolder) {
+        onSoundClickAction.stopAll { _recyclerView ->
+            stopAll(_recyclerView)
+        }
+        holder.soundViewModel.soundUrl?.let { _soundUrl ->
+            onSoundClickAction.playSound(
+                _soundUrl,
+                {
+                    selectSoundListItem(holder.itemView)
+                },
+                {
+                    unSelectSoundListItem(holder.itemView)
+                }
+            )
+        }
+    }
+
+    private fun selectSoundListItem(view: View) {
+        view.play_sound_icon.setColorFilter(selectedTextColor)
+        view.play_sound_text.setTextColor(selectedTextColor)
+        view.play_sound_text.typeface = Typeface.DEFAULT_BOLD
+    }
+
+    private fun unSelectSoundListItem(view: View) {
+        view.play_sound_icon.setColorFilter(unselectedTextColor)
+        view.play_sound_text.setTextColor(unselectedTextColor)
+        view.play_sound_text.typeface = Typeface.DEFAULT
     }
 
     class ViewHolder(
         itemView: View,
-        val binding: ListItemSoundBinding
+        val soundViewModel: SoundViewModel
     ) : RecyclerView.ViewHolder(itemView)
 }
