@@ -13,17 +13,13 @@ import com.solkismet.urbandictionary.R
 import com.solkismet.urbandictionary.data.models.WordDetail
 import com.solkismet.urbandictionary.databinding.ActivityWordDetailBinding
 import com.solkismet.urbandictionary.ui.adapters.SoundListAdapter
-import com.solkismet.urbandictionary.ui.contracts.SoundEventHandler
+import com.solkismet.urbandictionary.ui.viewmodels.SoundViewModel
 import com.solkismet.urbandictionary.ui.viewmodels.WordDetailViewModel
 import java.io.IOException
 import java.lang.IllegalArgumentException
 import java.lang.IllegalStateException
 
-class WordDetailActivity : AppCompatActivity(),
-    SoundEventHandler.OnPlaySound {
-    private lateinit var binding: ActivityWordDetailBinding
-    private lateinit var viewModel: WordDetailViewModel
-    private lateinit var mediaPlayer: MediaPlayer
+class WordDetailActivity : AppCompatActivity(), SoundViewModel.OnPlaySound {
 
     companion object {
         private const val DATA_KEY = "data_key"
@@ -35,23 +31,17 @@ class WordDetailActivity : AppCompatActivity(),
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_word_detail)
-        viewModel = ViewModelProviders.of(this).get(WordDetailViewModel::class.java)
-        intent?.let {
-            viewModel.searchResultItem.value = intent.getParcelableExtra(DATA_KEY)
-        }
-        binding.viewModel = viewModel
-        supportActionBar?.title = viewModel.searchResultItem.value?.word
-        val adapter = SoundListAdapter(application, this)
-        binding.detailItemSoundSampleList.adapter = adapter
-        adapter.data = viewModel.searchResultItem.value?.soundUrls
+    private var binding: ActivityWordDetailBinding? = null
+    private var viewModel: WordDetailViewModel? = null
+    private val mediaPlayer: MediaPlayer by lazy {
+        MediaPlayer()
     }
 
-    override fun onStart() {
-        super.onStart()
-        mediaPlayer = MediaPlayer()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        initViewModel()
+        initDataBinding()
+        initToolbar()
     }
 
     override fun onStop() {
@@ -72,28 +62,44 @@ class WordDetailActivity : AppCompatActivity(),
             }
         } catch (e: IllegalArgumentException) {
             if (!TextUtils.isEmpty(e.message)) {
-                Log.e("MediaPlayer", e.message)
+                Log.e("MediaPlayer", "Error preparing media player: ${e.message}\n${e.stackTrace.joinToString("\n")}")
             } else {
-                Log.e("MediaPlayer", "Caught IllegalArgumentException")
+                Log.e("MediaPlayer", "Caught IllegalArgumentException: \n${e.stackTrace.joinToString("\n")}")
             }
             mediaPlayer.release()
-            mediaPlayer = MediaPlayer()
         } catch (e: IOException) {
             if (!TextUtils.isEmpty(e.message)) {
-                Log.e("MediaPlayer", e.message)
+                Log.e("MediaPlayer", "Error preparing media player: ${e.message}\n${e.stackTrace.joinToString("\n")}")
             } else {
-                Log.e("MediaPlayer", "Caught IOException")
+                Log.e("MediaPlayer", "Caught IOException: \n${e.stackTrace.joinToString("\n")}")
             }
             mediaPlayer.release()
-            mediaPlayer = MediaPlayer()
         } catch (e: IllegalStateException) {
             if (!TextUtils.isEmpty(e.message)) {
-                Log.e("MediaPlayer", e.message)
+                Log.e("MediaPlayer", "Error preparing media player: ${e.message}\n${e.stackTrace.joinToString("\n")}")
             } else {
-                Log.e("MediaPlayer", "Caught IllegalStateException")
+                Log.e("MediaPlayer", "Caught IOException: \n${e.stackTrace.joinToString("\n")}")
             }
             mediaPlayer.release()
-            mediaPlayer = MediaPlayer()
         }
+    }
+
+    private fun initViewModel() {
+        viewModel = ViewModelProviders.of(this).get(WordDetailViewModel::class.java)
+        intent?.let {
+            viewModel?.searchResultItem?.value = intent.getParcelableExtra(DATA_KEY)
+        }
+    }
+
+    private fun initDataBinding() {
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_word_detail)
+        binding?.viewModel = viewModel
+        val adapter = SoundListAdapter(application, this)
+        binding?.detailItemSoundSampleList?.adapter = adapter
+        adapter.data = viewModel?.searchResultItem?.value?.soundUrls
+    }
+
+    private fun initToolbar() {
+        supportActionBar?.title = viewModel?.searchResultItem?.value?.word
     }
 }

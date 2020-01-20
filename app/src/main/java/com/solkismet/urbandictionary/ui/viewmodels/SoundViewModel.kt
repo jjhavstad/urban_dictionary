@@ -2,12 +2,26 @@ package com.solkismet.urbandictionary.ui.viewmodels
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.solkismet.urbandictionary.ui.contracts.SoundEventHandler
 
-class SoundViewModel(val onPlaySound: SoundEventHandler.OnPlaySound,
-    val onUpdateSoundListItem: SoundEventHandler.OnUpdateSoundListItem) : ViewModel() {
-    val soundFileText =
-        MutableLiveData<String>("")
+class SoundViewModel(
+    private val onPlaySound: OnPlaySound,
+    private val onUpdateSoundListItem: OnUpdateSoundListItem
+) : ViewModel() {
+
+    interface OnPlaySound {
+        fun playSound(
+            url: String,
+            onPlaySoundStarted: () -> Unit,
+            onPlaySoundStopped: () -> Unit
+        )
+    }
+
+    interface OnUpdateSoundListItem {
+        fun selectSoundListItem()
+        fun unSelectSoundListItem()
+    }
+
+    val soundFileText = MutableLiveData<String>("")
     var soundUrl: String? = null
 
     fun setSoundFileText(text: String) {
@@ -15,12 +29,16 @@ class SoundViewModel(val onPlaySound: SoundEventHandler.OnPlaySound,
     }
 
     fun playSound() {
-        soundUrl?.let {
-            onPlaySound.playSound(it, {
-                onUpdateSoundListItem.selectSoundListItem()
-            }, {
-                onUpdateSoundListItem.unselectSoundListItem()
-            })
+        soundUrl?.let { _soundUrl ->
+            onPlaySound.playSound(
+                _soundUrl,
+                {
+                    onUpdateSoundListItem.selectSoundListItem()
+                },
+                {
+                    onUpdateSoundListItem.unSelectSoundListItem()
+                }
+            )
         }
     }
 }

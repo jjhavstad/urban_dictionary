@@ -4,17 +4,20 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 
-data class WordDetail(@SerializedName("definition") val definition: String,
-                      @SerializedName("permalink") val permaLink: String,
-                      @SerializedName("thumbs_up") val thumbsUp: Int,
-                      @SerializedName("sound_urls") val soundUrls: List<String>,
-                      @SerializedName("author") val author: String,
-                      @SerializedName("word") val word: String,
-                      @SerializedName("defid") val defId: Long,
-                      @SerializedName("current_vote") val currentVote: String,
-                      @SerializedName("written_on") val writtenOn: String,
-                      @SerializedName("example") val example: String,
-                      @SerializedName("thumbs_down") val thumbsDown: Int) : Parcelable {
+data class WordDetail(
+    @SerializedName("definition") val definition: String?,
+    @SerializedName("permalink") val permaLink: String?,
+    @SerializedName("thumbs_up") val thumbsUp: Int,
+    @SerializedName("sound_urls") val soundUrls: List<String>?,
+    @SerializedName("author") val author: String?,
+    @SerializedName("word") val word: String?,
+    @SerializedName("defid") val defId: Long,
+    @SerializedName("current_vote") val currentVote: String?,
+    @SerializedName("written_on") val writtenOn: String?,
+    @SerializedName("example") val example: String?,
+    @SerializedName("thumbs_down") val thumbsDown: Int
+) : Parcelable {
+
     constructor(parcel: Parcel) : this(
         parcel.readString(),
         parcel.readString(),

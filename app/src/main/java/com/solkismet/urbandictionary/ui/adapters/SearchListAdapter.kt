@@ -9,14 +9,15 @@ import com.solkismet.urbandictionary.R
 import com.solkismet.urbandictionary.data.models.WordDetail
 import com.solkismet.urbandictionary.databinding.ListItemSearchBinding
 import com.solkismet.urbandictionary.databinding.ListItemSearchEmptyBinding
-import com.solkismet.urbandictionary.ui.contracts.SearchEventHandler
 import com.solkismet.urbandictionary.ui.viewmodels.EmptySearchViewModel
+import com.solkismet.urbandictionary.ui.viewmodels.SearchViewModel
 import com.solkismet.urbandictionary.ui.viewmodels.WordDetailViewModel
 
-class SearchListAdapter(val onItemClicked: SearchEventHandler.OnItemClicked) :
+class SearchListAdapter(private val onItemClicked: SearchViewModel.OnItemClicked) :
     RecyclerView.Adapter<SearchListAdapter.BaseViewHolder>() {
+
     var data: List<WordDetail>? = null
-        set(value) {
+        set (value) {
             field = value
             notifyDataSetChanged()
         }
