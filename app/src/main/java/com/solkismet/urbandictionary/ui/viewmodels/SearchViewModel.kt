@@ -11,7 +11,6 @@ import org.koin.core.KoinComponent
 import org.koin.core.inject
 
 class SearchViewModel(
-    emptySearchText: String,
     private val onSearchAction: OnSearchAction
 ) : ViewModel(), KoinComponent {
 
@@ -37,20 +36,22 @@ class SearchViewModel(
         fun clearSort()
         fun showError()
         fun setIsRefreshing(refreshing: Boolean)
+        fun updateList(list: MutableList<WordDetail>?)
+        fun showStartSearch()
+        fun showEmptySearchResults()
+        fun hideEmptySearchResults()
     }
 
-    val emptyResultText: MutableLiveData<String> = MutableLiveData(emptySearchText)
     val searchResult = MutableLiveData<SearchResult>()
     private val disposables = CompositeDisposable()
     private val searchService: SearchService by inject()
     private var currentSearchTerm: String? = null
 
     class Factory(
-        private val onSearchAction: OnSearchAction,
-        private val emptySearchText: String
+        private val onSearchAction: OnSearchAction
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-            return SearchViewModel(emptySearchText, onSearchAction) as T
+            return SearchViewModel(onSearchAction) as T
         }
     }
 
@@ -61,6 +62,30 @@ class SearchViewModel(
             setSearchResult(null)
         } else {
             searchTerm(query)
+        }
+    }
+
+    fun clearDisposables() {
+        disposables.clear()
+    }
+
+    fun refreshSearch() {
+        currentSearchTerm?.let {
+            searchTerm(it)
+        }
+    }
+
+    fun handleSearchResults(data: SearchResult?) {
+        data?.let { _searchResult ->
+            onSearchAction.updateList(_searchResult.list)
+            if (_searchResult.list.isEmpty()) {
+                onSearchAction.showEmptySearchResults()
+            } else {
+                onSearchAction.hideEmptySearchResults()
+            }
+        } ?: run {
+            onSearchAction.updateList(null)
+            onSearchAction.showStartSearch()
         }
     }
 
@@ -82,17 +107,7 @@ class SearchViewModel(
         )
     }
 
-    fun clearDisposables() {
-        disposables.clear()
-    }
-
-    fun refreshSearch() {
-        currentSearchTerm?.let {
-            searchTerm(it)
-        }
-    }
-
-    fun setSearchResult(data: SearchResult?) {
+    private fun setSearchResult(data: SearchResult?) {
         searchResult.value = data
     }
 }

@@ -166,11 +166,78 @@ class SearchViewModelTest : KoinTest {
         verify(onSearchAction, times(2)).setIsRefreshing(true)
     }
 
+    @Test
+    fun `handleSearchResults SHOULD call updateList WHEN current search term is empty`() {
+        //GIVEN
+
+        //WHEN
+        viewModel.handleSearchResults(null)
+
+        //THEN
+        verify(onSearchAction).updateList(null)
+    }
+
+    @Test
+    fun `handleSearchResults SHOULD call updateList WHEN current search term is not empty`() {
+        //GIVEN
+        val successfulResponse = createSuccessfulSearchResponse()
+
+        //WHEN
+        viewModel.handleSearchResults(successfulResponse)
+
+        //THEN
+        verify(onSearchAction).updateList(successfulResponse.list)
+    }
+
+    @Test
+    fun `handleSearchResults SHOULD call hideEmptySearchResults WHEN current search term is not empty`() {
+        //GIVEN
+        val successfulResponse = createSuccessfulSearchResponse()
+
+        //WHEN
+        viewModel.handleSearchResults(successfulResponse)
+
+        //THEN
+        verify(onSearchAction).hideEmptySearchResults()
+    }
+
+    @Test
+    fun `handleSearchResults SHOULD call hideEmptySearchResults WHEN current search term is empty`() {
+        //GIVEN
+        val emptySuccessfulResponse = createEmptySuccessfulSearchResponse()
+
+        //WHEN
+        viewModel.handleSearchResults(emptySuccessfulResponse)
+
+        //THEN
+        verify(onSearchAction).showEmptySearchResults()
+    }
+
+    @Test
+    fun `handleSearchResults SHOULD call showStartSearch WHEN there is no current search`() {
+        //GIVEN
+
+        //WHEN
+        viewModel.handleSearchResults(null)
+
+        //THEN
+        verify(onSearchAction).showStartSearch()
+    }
+
     private fun createSuccessfulSearchResponse(): SearchResult {
         return gson.fromJson(SAMPLE_RESPONSE_JSON, SearchResult::class.java)
     }
 
+    private fun createEmptySuccessfulSearchResponse(): SearchResult {
+        return gson.fromJson(EMPTY_SAMPLE_RESONSE_JSON, SearchResult::class.java)
+    }
+
     private companion object {
+        const val EMPTY_SAMPLE_RESONSE_JSON = "{\n" +
+                "    \"list\": [\n" +
+                "   ]\n" +
+                "}"
+
         const val SAMPLE_RESPONSE_JSON = "{\n" +
                 "    \"list\": [\n" +
                 "        {\n" +

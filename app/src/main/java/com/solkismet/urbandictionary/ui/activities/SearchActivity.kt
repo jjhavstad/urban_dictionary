@@ -125,13 +125,30 @@ class SearchActivity : AppCompatActivity(),
         binding?.refreshSearchListView?.isRefreshing = refreshing
     }
 
+    override fun updateList(list: MutableList<WordDetail>?) {
+        (binding?.searchListView?.adapter as SearchListAdapter).apply {
+            submitList(list)
+        }
+    }
+
+    override fun showStartSearch() {
+        empty_search_results.visibility = View.VISIBLE
+        empty_search_results.text = getString(R.string.search_input_for_results)
+    }
+
+    override fun showEmptySearchResults() {
+        empty_search_results.visibility = View.VISIBLE
+        empty_search_results.text = getString(R.string.search_no_results)
+    }
+
+    override fun hideEmptySearchResults() {
+        empty_search_results.visibility = View.GONE
+    }
+
     private fun initViewModel() {
         viewModel = ViewModelProviders.of(
             this,
-            SearchViewModel.Factory(
-                this,
-                getString(R.string.search_input_for_results)
-            )
+            SearchViewModel.Factory(this)
         ).get(SearchViewModel::class.java)
 
         viewModel?.searchResult?.observe(this, Observer { _data ->
@@ -175,21 +192,7 @@ class SearchActivity : AppCompatActivity(),
     }
 
     private fun setSearchResult(data: SearchResult?) {
-        (binding?.searchListView?.adapter as SearchListAdapter).apply {
-            data?.let { _searchResult ->
-                submitList(_searchResult.list)
-                if (_searchResult.list.isEmpty()) {
-                    empty_search_results.visibility = View.VISIBLE
-                    empty_search_results.text = getString(R.string.search_no_results)
-                } else {
-                    empty_search_results.visibility = View.GONE
-                }
-            } ?: run {
-                submitList(null)
-                empty_search_results.visibility = View.VISIBLE
-                empty_search_results.text = getString(R.string.search_input_for_results)
-            }
-        }
+        viewModel?.handleSearchResults(data)
     }
 
     private companion object {
