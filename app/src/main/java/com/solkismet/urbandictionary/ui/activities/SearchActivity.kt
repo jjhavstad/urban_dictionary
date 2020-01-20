@@ -2,6 +2,7 @@ package com.solkismet.urbandictionary.ui.activities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -15,6 +16,7 @@ import com.solkismet.urbandictionary.databinding.ActivityMainBinding
 import com.solkismet.urbandictionary.ui.adapters.SearchListAdapter
 import com.solkismet.urbandictionary.ui.extensions.withColor
 import com.solkismet.urbandictionary.ui.viewmodels.SearchViewModel
+import kotlinx.android.synthetic.main.activity_main.*
 
 class SearchActivity : AppCompatActivity(),
     SearchViewModel.OnItemClicked,
@@ -126,7 +128,10 @@ class SearchActivity : AppCompatActivity(),
     private fun initViewModel() {
         viewModel = ViewModelProviders.of(
             this,
-            SearchViewModel.Factory(this)
+            SearchViewModel.Factory(
+                this,
+                getString(R.string.search_input_for_results)
+            )
         ).get(SearchViewModel::class.java)
 
         viewModel?.searchResult?.observe(this, Observer { _data ->
@@ -140,6 +145,7 @@ class SearchActivity : AppCompatActivity(),
         binding?.onRefreshListener = this
         binding?.onSortByThumbsUpListener = this
         binding?.onSortByThumbsDownListener = this
+        binding?.searchListView?.adapter = SearchListAdapter(this)
     }
 
     private fun initSearchBar() {
@@ -169,9 +175,21 @@ class SearchActivity : AppCompatActivity(),
     }
 
     private fun setSearchResult(data: SearchResult?) {
-        val adapter = SearchListAdapter(this)
-        binding?.searchListView?.adapter = adapter
-        adapter.data = data?.list
+        (binding?.searchListView?.adapter as SearchListAdapter).apply {
+            data?.let { _searchResult ->
+                submitList(_searchResult.list)
+                if (_searchResult.list.isEmpty()) {
+                    empty_search_results.visibility = View.VISIBLE
+                    empty_search_results.text = getString(R.string.search_no_results)
+                } else {
+                    empty_search_results.visibility = View.GONE
+                }
+            } ?: run {
+                submitList(null)
+                empty_search_results.visibility = View.VISIBLE
+                empty_search_results.text = getString(R.string.search_input_for_results)
+            }
+        }
     }
 
     private companion object {

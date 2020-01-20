@@ -103,7 +103,7 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
         binding?.viewModel = viewModel
         val adapter = SoundListAdapter(application, this)
         binding?.detailItemSoundSampleList?.adapter = adapter
-        adapter.data = viewModel?.searchResultItem?.value?.soundUrls
+        adapter.submitList(viewModel?.searchResultItem?.value?.soundUrls)
     }
 
     private fun initToolbar() {

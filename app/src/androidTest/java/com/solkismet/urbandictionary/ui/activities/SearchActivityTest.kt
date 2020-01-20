@@ -4,6 +4,8 @@ package com.solkismet.urbandictionary.ui.activities
 import android.view.View
 import android.view.ViewGroup
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.UiController
+import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.filters.LargeTest
@@ -64,6 +66,8 @@ class SearchActivityTest {
         )
         searchAutoComplete.perform(replaceText("lol"), closeSoftKeyboard())
 
+        onView(isRoot()).perform(waitFor(50))
+
         val cardView = onView(
             allOf(
                 childAtPosition(
@@ -114,6 +118,24 @@ class SearchActivityTest {
                 val parent = view.parent
                 return parent is ViewGroup && parentMatcher.matches(parent)
                         && view == parent.getChildAt(position)
+            }
+        }
+    }
+
+    private fun waitFor(
+        millis: Long
+    ): ViewAction {
+        return object: ViewAction {
+            override fun getDescription(): String {
+                return "Wait for $millis milliseconds."
+            }
+
+            override fun getConstraints(): Matcher<View> {
+                return isRoot()
+            }
+
+            override fun perform(uiController: UiController?, view: View?) {
+                uiController?.loopMainThreadForAtLeast(millis)
             }
         }
     }

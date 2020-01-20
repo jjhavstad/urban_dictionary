@@ -10,7 +10,10 @@ import io.reactivex.disposables.CompositeDisposable
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
-class SearchViewModel(private val onSearchAction: OnSearchAction) : ViewModel(), KoinComponent {
+class SearchViewModel(
+    emptySearchText: String,
+    private val onSearchAction: OnSearchAction
+) : ViewModel(), KoinComponent {
 
     interface OnItemClicked {
         fun click(wordDetail: WordDetail)
@@ -36,14 +39,18 @@ class SearchViewModel(private val onSearchAction: OnSearchAction) : ViewModel(),
         fun setIsRefreshing(refreshing: Boolean)
     }
 
+    val emptyResultText: MutableLiveData<String> = MutableLiveData(emptySearchText)
     val searchResult = MutableLiveData<SearchResult>()
     private val disposables = CompositeDisposable()
     private val searchService: SearchService by inject()
     private var currentSearchTerm: String? = null
 
-    class Factory(private val onSearchAction: OnSearchAction) : ViewModelProvider.Factory {
+    class Factory(
+        private val onSearchAction: OnSearchAction,
+        private val emptySearchText: String
+    ) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-            return SearchViewModel(onSearchAction) as T
+            return SearchViewModel(emptySearchText, onSearchAction) as T
         }
     }
 
