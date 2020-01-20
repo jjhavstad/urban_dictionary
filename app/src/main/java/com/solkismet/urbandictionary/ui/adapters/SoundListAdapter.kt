@@ -6,22 +6,26 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.solkismet.urbandictionary.R
 import com.solkismet.urbandictionary.viewmodels.SoundViewModel
+import com.solkismet.urbandictionary.viewmodels.WordDetailViewModel
 import kotlinx.android.synthetic.main.list_item_sound.view.*
 
 class SoundListAdapter(
     application: Application,
+    activity: FragmentActivity,
     private val onSoundClickAction: OnSoundClickAction
 ) : ListAdapter<String, SoundListAdapter.ViewHolder>(SoundUriDiff()) {
     interface OnSoundClickAction {
         fun playSound(
             url: String,
-            onPlaySoundStarted: () -> Unit,
-            onPlaySoundStopped: () -> Unit
+            onPlaySoundStarted: (recyclerView: RecyclerView) -> Unit,
+            onPlaySoundStopped: (recyclerView: RecyclerView) -> Unit
         )
         fun stopAll(updateList: (recyclerView: RecyclerView) -> Unit)
     }
@@ -40,6 +44,34 @@ class SoundListAdapter(
         )
     }
 
+    private val viewModel: WordDetailViewModel = ViewModelProviders.of(activity).get(WordDetailViewModel::class.java)
+
+    init {
+        viewModel.onSoundAction = object: WordDetailViewModel.OnSoundAction {
+            override fun playSound(soundUrl: String, position: Int) {
+                onSoundClickAction.playSound(
+                    soundUrl,
+                    { recyclerView ->
+                        recyclerView.findViewHolderForAdapterPosition(position)?.let { _viewHolder ->
+                            selectSoundListItem(_viewHolder.itemView)
+                        }
+                    },
+                    { recyclerView ->
+                        recyclerView.findViewHolderForAdapterPosition(position)?.let { _viewHolder ->
+                            unSelectSoundListItem(_viewHolder.itemView)
+                        }
+                    }
+                )
+            }
+
+            override fun stopAll() {
+                onSoundClickAction.stopAll { _recyclerView ->
+                    stopAll(_recyclerView)
+                }
+            }
+        }
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(
             R.layout.list_item_sound,
@@ -56,10 +88,10 @@ class SoundListAdapter(
             holder.soundViewModel.soundUrl = _soundUrl
             holder.itemView.play_sound_text.text = holder.itemView.context.getString(R.string.audio_file, position+1)
             holder.itemView.play_sound_icon.setOnClickListener {
-                playSound(holder)
+                playSound(holder, position)
             }
             holder.itemView.play_sound_text.setOnClickListener {
-                playSound(holder)
+                playSound(holder, position)
             }
         }
     }
@@ -72,20 +104,9 @@ class SoundListAdapter(
         }
     }
 
-    private fun playSound(holder: ViewHolder) {
-        onSoundClickAction.stopAll { _recyclerView ->
-            stopAll(_recyclerView)
-        }
+    private fun playSound(holder: ViewHolder, position: Int) {
         holder.soundViewModel.soundUrl?.let { _soundUrl ->
-            onSoundClickAction.playSound(
-                _soundUrl,
-                {
-                    selectSoundListItem(holder.itemView)
-                },
-                {
-                    unSelectSoundListItem(holder.itemView)
-                }
-            )
+            viewModel.playSound(_soundUrl, position)
         }
     }
 

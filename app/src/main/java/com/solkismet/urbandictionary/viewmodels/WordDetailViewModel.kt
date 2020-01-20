@@ -6,4 +6,19 @@ import com.solkismet.urbandictionary.data.models.WordDetail
 
 class WordDetailViewModel(
     val searchResultItem: MutableLiveData<WordDetail> = MutableLiveData()
-) : ViewModel()
+) : ViewModel() {
+
+    interface OnSoundAction {
+        fun playSound(soundUrl: String, position: Int)
+        fun stopAll()
+    }
+
+    var onSoundAction: OnSoundAction? = null
+
+    fun playSound(soundUrl: String, position: Int) {
+        onSoundAction?.let { _onSoundAction ->
+            _onSoundAction.stopAll()
+            _onSoundAction.playSound(soundUrl, position)
+        }
+    }
+}

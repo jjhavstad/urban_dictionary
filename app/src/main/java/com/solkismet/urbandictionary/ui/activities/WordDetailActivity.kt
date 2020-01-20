@@ -50,14 +50,23 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
     }
 
     override fun playSound(url: String,
-                           onPlaySoundStarted: () -> Unit,
-                           onPlaySoundStopped: () -> Unit) {
+                           onPlaySoundStarted: (recyclerView: RecyclerView) -> Unit,
+                           onPlaySoundStopped: (recyclerView: RecyclerView) -> Unit) {
         try {
             mediaPlayer.apply {
                 reset()
                 setDataSource(url)
-                setOnPreparedListener { mp -> mp.start(); onPlaySoundStarted() }
-                setOnCompletionListener { onPlaySoundStopped() }
+                setOnPreparedListener {
+                    mp -> mp.start()
+                    binding?.detailItemSoundSampleList?.let { _recyclerView ->
+                        onPlaySoundStarted(_recyclerView)
+                    }
+                }
+                setOnCompletionListener {
+                    binding?.detailItemSoundSampleList?.let { _recyclerView ->
+                        onPlaySoundStopped(_recyclerView)
+                    }
+                }
                 prepareAsync()
             }
         } catch (e: IllegalArgumentException) {
@@ -101,7 +110,7 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
     private fun initDataBinding() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_word_detail)
         binding?.viewModel = viewModel
-        val adapter = SoundListAdapter(application, this)
+        val adapter = SoundListAdapter(application, activity = this, onSoundClickAction = this)
         binding?.detailItemSoundSampleList?.adapter = adapter
         adapter.submitList(viewModel?.searchResultItem?.value?.soundUrls)
     }
