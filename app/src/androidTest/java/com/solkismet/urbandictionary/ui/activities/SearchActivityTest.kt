@@ -62,7 +62,7 @@ class SearchActivityTest {
                 isDisplayed()
             )
         )
-        searchAutoComplete.perform(replaceText("fo"), closeSoftKeyboard())
+        searchAutoComplete.perform(replaceText("lol"), closeSoftKeyboard())
 
         val cardView = onView(
             allOf(
