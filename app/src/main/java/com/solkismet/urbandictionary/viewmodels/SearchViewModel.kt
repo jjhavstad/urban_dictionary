@@ -3,6 +3,7 @@ package com.solkismet.urbandictionary.viewmodels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.solkismet.urbandictionary.data.db.WordDetailDao
 import com.solkismet.urbandictionary.data.models.SearchResult
 import com.solkismet.urbandictionary.data.models.WordDetail
 import com.solkismet.urbandictionary.data.network.SearchService
@@ -37,14 +38,17 @@ class SearchViewModel(
         fun showError()
         fun setIsRefreshing(refreshing: Boolean)
         fun updateList(list: MutableList<WordDetail>?)
+        fun saveList(list: MutableList<WordDetail>?)
         fun showStartSearch()
         fun showEmptySearchResults()
         fun hideEmptySearchResults()
     }
 
     val searchResult = MutableLiveData<SearchResult>()
-    private val disposables = CompositeDisposable()
+    var online: Boolean = true
+    val disposables = CompositeDisposable()
     private val searchService: SearchService by inject()
+    private val wordDetailDao: WordDetailDao by inject()
     private var currentSearchTerm: String? = null
 
     class Factory(
@@ -89,25 +93,44 @@ class SearchViewModel(
         }
     }
 
+    fun saveWord(wordDetail: WordDetail) {
+        wordDetailDao.insert(wordDetail)
+    }
+
     private fun searchTerm(term: String) {
         onSearchAction.clearSort()
         onSearchAction.setIsRefreshing(true)
         disposables.add(
-            searchService.search(term).subscribe(
-                {
-                    if (term == currentSearchTerm) {
-                        setSearchResult(it)
+            when (online) {
+                true -> searchService.search(term).subscribe(
+                    {
+                        if (term == currentSearchTerm) {
+                            onSearchAction.saveList(it.list)
+                            setSearchResult(it)
+                        }
+                        onSearchAction.setIsRefreshing(false)
+                    }, {
+                        onSearchAction.setIsRefreshing(false)
+                        onSearchAction.showError()
                     }
-                    onSearchAction.setIsRefreshing(false)
-                }, {
-                    onSearchAction.setIsRefreshing(false)
-                    onSearchAction.showError()
-                }
-            )
+                )
+                false -> wordDetailDao.searchForWord(term).subscribe(
+                    {
+                        if (term == currentSearchTerm) {
+                            setSearchResult(SearchResult(it))
+                        }
+                        onSearchAction.setIsRefreshing(false)
+                    },
+                    {
+                        onSearchAction.setIsRefreshing(false)
+                        onSearchAction.showError()
+                    }
+                )
+            }
         )
     }
 
     private fun setSearchResult(data: SearchResult?) {
-        searchResult.value = data
+        searchResult.postValue(data)
     }
 }

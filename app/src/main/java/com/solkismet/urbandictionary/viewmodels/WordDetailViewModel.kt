@@ -8,6 +8,8 @@ class WordDetailViewModel(
     val searchResultItem: MutableLiveData<WordDetail> = MutableLiveData()
 ) : ViewModel() {
 
+    var online: Boolean = true
+
     interface OnSoundAction {
         fun playSound(soundUrl: String, position: Int)
         fun stopAll()
@@ -16,9 +18,11 @@ class WordDetailViewModel(
     var onSoundAction: OnSoundAction? = null
 
     fun playSound(soundUrl: String, position: Int) {
-        onSoundAction?.let { _onSoundAction ->
-            _onSoundAction.stopAll()
-            _onSoundAction.playSound(soundUrl, position)
+        if (online) {
+            onSoundAction?.let { _onSoundAction ->
+                _onSoundAction.stopAll()
+                _onSoundAction.playSound(soundUrl, position)
+            }
         }
     }
 }

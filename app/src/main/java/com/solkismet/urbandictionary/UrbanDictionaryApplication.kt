@@ -1,6 +1,7 @@
 package com.solkismet.urbandictionary
 
 import android.app.Application
+import com.solkismet.urbandictionary.data.di.dataBaseModule
 import com.solkismet.urbandictionary.data.di.networkModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -10,7 +11,7 @@ class UrbanDictionaryApplication : Application() {
         super.onCreate()
         startKoin {
             androidContext(this@UrbanDictionaryApplication)
-            modules(networkModule)
+            modules(networkModule, dataBaseModule)
         }
     }
 }

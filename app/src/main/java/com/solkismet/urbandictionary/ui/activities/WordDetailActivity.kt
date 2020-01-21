@@ -3,6 +3,7 @@ package com.solkismet.urbandictionary.ui.activities
 import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
@@ -14,6 +15,7 @@ import com.solkismet.urbandictionary.R
 import com.solkismet.urbandictionary.data.models.WordDetail
 import com.solkismet.urbandictionary.databinding.ActivityWordDetailBinding
 import com.solkismet.urbandictionary.ui.adapters.SoundListAdapter
+import com.solkismet.urbandictionary.ui.utils.NetworkListenerHelper
 import com.solkismet.urbandictionary.viewmodels.WordDetailViewModel
 import java.io.IOException
 import java.lang.IllegalArgumentException
@@ -36,17 +38,24 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
     private val mediaPlayer: MediaPlayer by lazy {
         MediaPlayer()
     }
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initViewModel()
         initDataBinding()
         initToolbar()
+        registerNetworkConnectivityListener()
     }
 
     override fun onStop() {
         super.onStop()
         mediaPlayer.release()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterNetworkConnectivityListener()
     }
 
     override fun playSound(
@@ -119,5 +128,21 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
 
     private fun initToolbar() {
         supportActionBar?.title = viewModel?.searchResultItem?.value?.word
+    }
+
+    private fun registerNetworkConnectivityListener() {
+        val connectivityManager: ConnectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        networkCallback = NetworkListenerHelper.registerNetworkStateChangeListener(
+            connectivityManager,
+            { viewModel?.online = true },
+            { viewModel?.online = false }
+        )
+    }
+
+    private fun unregisterNetworkConnectivityListener() {
+        networkCallback?.let { _networkCallback ->
+            val connectivityManager: ConnectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            NetworkListenerHelper.unregisterNetworkStateChangeListener(connectivityManager, _networkCallback)
+        }
     }
 }

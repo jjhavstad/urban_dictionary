@@ -2,12 +2,13 @@ package com.solkismet.urbandictionary.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.gson.Gson
+import com.solkismet.urbandictionary.data.db.WordDetailDao
+import com.solkismet.urbandictionary.data.di.dataBaseModule
 import com.solkismet.urbandictionary.data.di.networkModule
 import com.solkismet.urbandictionary.data.models.SearchResult
 import com.solkismet.urbandictionary.data.network.SearchService
 import io.reactivex.Flowable
-import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertNotNull
+import junit.framework.Assert.*
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -34,7 +35,7 @@ class SearchViewModelTest : KoinTest {
 
     @Before
     fun initialize() {
-        startKoin { modules(networkModule) }
+        startKoin { modules(networkModule, dataBaseModule) }
         onSearchAction = mock(SearchViewModel.OnSearchAction::class.java)
         viewModel = SearchViewModel(onSearchAction)
     }
@@ -222,6 +223,43 @@ class SearchViewModelTest : KoinTest {
 
         //THEN
         verify(onSearchAction).showStartSearch()
+    }
+
+    @Test
+    fun `processSearchQuery SHOULD return 1 element WHEN search query is not empty AND worddetail dao returns a valid response AND network is turned off AND valid data is in the database`() {
+        //GIVEN
+        viewModel.online = false
+        val successfulResponse = createSuccessfulSearchResponse()
+        declareMock<WordDetailDao> {
+            given(this.searchForWord(anyString())).willReturn(Flowable.just(successfulResponse.list))
+        }
+
+        //WHEN
+        viewModel.processSearchQuery("sweet")
+
+        //THEN
+        assertNotNull(viewModel.searchResult.value)
+        assertNotNull(viewModel.searchResult.value?.list)
+        assertEquals(viewModel.searchResult.value?.list?.size, 1)
+        assertNotNull(viewModel.searchResult.value?.list?.get(0))
+        assertEquals(viewModel.searchResult.value?.list?.get(0)?.word, "Sweet")
+    }
+
+    @Test
+    fun `processSearchQuery SHOULD not return any elements WHEN search query is not empty AND search api returns a valid response AND network is turned of AND valid data is not in the database`() {
+        //GIVEN
+        viewModel.online = false
+        declareMock<WordDetailDao> {
+            given(this.searchForWord(anyString())).willReturn(Flowable.just(mutableListOf()))
+        }
+
+        //WHEN
+        viewModel.processSearchQuery("sweet")
+
+        //THEN
+        assertNotNull(viewModel.searchResult.value)
+        assertNotNull(viewModel.searchResult.value?.list)
+        assertEquals(viewModel.searchResult.value?.list?.size, 0)
     }
 
     private fun createSuccessfulSearchResponse(): SearchResult {

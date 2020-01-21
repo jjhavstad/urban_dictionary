@@ -1,5 +1,7 @@
 package com.solkismet.urbandictionary.ui.activities
 
+import android.content.Context
+import android.net.*
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -15,7 +17,10 @@ import com.solkismet.urbandictionary.data.models.WordDetail
 import com.solkismet.urbandictionary.databinding.ActivityMainBinding
 import com.solkismet.urbandictionary.ui.adapters.SearchListAdapter
 import com.solkismet.urbandictionary.ui.extensions.withColor
+import com.solkismet.urbandictionary.ui.utils.NetworkListenerHelper
 import com.solkismet.urbandictionary.viewmodels.SearchViewModel
+import io.reactivex.Completable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 
 class SearchActivity : AppCompatActivity(),
@@ -27,12 +32,14 @@ class SearchActivity : AppCompatActivity(),
 
     private var binding: ActivityMainBinding? = null
     private var viewModel: SearchViewModel? = null
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initViewModel()
         initDataBinding()
         initSearchBar()
+        registerNetworkConnectivityListener()
     }
 
     override fun onStop() {
@@ -46,6 +53,11 @@ class SearchActivity : AppCompatActivity(),
             viewModel?.searchResult?.value?.list?.toTypedArray()
         )
         super.onSaveInstanceState(outState)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterNetworkConnectivityListener()
     }
 
     override fun click(wordDetail: WordDetail) {
@@ -131,6 +143,16 @@ class SearchActivity : AppCompatActivity(),
         }
     }
 
+    override fun saveList(list: MutableList<WordDetail>?) {
+        viewModel?.disposables?.add(
+            Completable.fromRunnable {
+                list?.forEach { _wordDetail ->
+                    viewModel?.saveWord(_wordDetail)
+                }
+            }.subscribeOn(Schedulers.io()).subscribe()
+        )
+    }
+
     override fun showStartSearch() {
         empty_search_results.visibility = View.VISIBLE
         empty_search_results.text = getString(R.string.search_input_for_results)
@@ -188,6 +210,22 @@ class SearchActivity : AppCompatActivity(),
 
         binding?.searchView?.setOnClickListener {
             (it as SearchView).isIconified = false
+        }
+    }
+
+    private fun registerNetworkConnectivityListener() {
+        val connectivityManager: ConnectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        networkCallback = NetworkListenerHelper.registerNetworkStateChangeListener(
+            connectivityManager,
+            { viewModel?.online = true },
+            { viewModel?.online = false }
+        )
+    }
+
+    private fun unregisterNetworkConnectivityListener() {
+        networkCallback?.let { _networkCallback ->
+            val connectivityManager: ConnectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            NetworkListenerHelper.unregisterNetworkStateChangeListener(connectivityManager, _networkCallback)
         }
     }
 
