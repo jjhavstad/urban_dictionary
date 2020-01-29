@@ -58,27 +58,15 @@ class SearchActivity : AppCompatActivity(),
     }
 
     override fun sortByThumbsUp() {
-        viewModel?.getSearchResult()?.value?.let { _searchResult ->
-            val sortedSearchResult = mutableListOf<WordDetail>().apply {
-                addAll(_searchResult.list)
-            }
-            sortedSearchResult.sortByDescending { _wordDetail ->
-                _wordDetail.thumbsUp
-            }
-            setSearchResult(SearchResult(sortedSearchResult))
+        viewModel?.sortResultsByThumbsUp()?.let { _sortedSearchResult ->
+            setSearchResult(SearchResult(_sortedSearchResult.toMutableList()))
             setThumbsUpSelected()
         }
     }
 
     override fun sortByThumbsDown() {
-        viewModel?.getSearchResult()?.value?.let { _searchResult ->
-            val sortedSearchResult = mutableListOf<WordDetail>().apply {
-                addAll(_searchResult.list)
-            }
-            sortedSearchResult.sortByDescending { _wordDetail ->
-                _wordDetail.thumbsDown
-            }
-            setSearchResult(SearchResult(sortedSearchResult))
+        viewModel?.sortResultsByThumbsDown()?.let { _sortedSearchResult ->
+            setSearchResult(SearchResult(_sortedSearchResult.toMutableList()))
             setThumbsDownSelected()
         }
     }

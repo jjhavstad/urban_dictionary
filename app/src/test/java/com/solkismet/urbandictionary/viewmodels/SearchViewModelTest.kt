@@ -262,12 +262,62 @@ class SearchViewModelTest : KoinTest {
         assertEquals(viewModel.getSearchResult().value?.list?.size, 0)
     }
 
+    @Test
+    fun `sortResultsByThumbsUp SHOULD return a list sorted by thumbs up in descending order`() {
+        // GIVEN
+        val successfulResponse = createSuccessfulMulipleSearchResponse()
+        declareMock<SearchService> {
+            given(this.search(anyString())).willReturn(Flowable.just(successfulResponse))
+        }
+        viewModel.processSearchQuery("sweet")
+
+        // WHEN
+        val sortedList = viewModel.sortResultsByThumbsUp()
+
+        // THEN
+        assertNotNull(sortedList)
+        assertEquals(sortedList?.size, 3)
+        assertNotNull(sortedList?.get(0))
+        assertEquals(sortedList?.get(0)?.thumbsUp, 200)
+        assertNotNull(sortedList?.get(1))
+        assertEquals(sortedList?.get(1)?.thumbsUp, 81)
+        assertNotNull(sortedList?.get(2))
+        assertEquals(sortedList?.get(2)?.thumbsUp, 5)
+    }
+
+    @Test
+    fun `sortResultsByThumbsDown SHOULD return a list sorted by thumbs down in descending order`() {
+        // GIVEN
+        val successfulResponse = createSuccessfulMulipleSearchResponse()
+        declareMock<SearchService> {
+            given(this.search(anyString())).willReturn(Flowable.just(successfulResponse))
+        }
+        viewModel.processSearchQuery("sweet")
+
+        // WHEN
+        val sortedList = viewModel.sortResultsByThumbsDown()
+
+        // THEN
+        assertNotNull(sortedList)
+        assertEquals(sortedList?.size, 3)
+        assertNotNull(sortedList?.get(0))
+        assertEquals(sortedList?.get(0)?.thumbsDown, 25)
+        assertNotNull(sortedList?.get(1))
+        assertEquals(sortedList?.get(1)?.thumbsDown, 19)
+        assertNotNull(sortedList?.get(2))
+        assertEquals(sortedList?.get(2)?.thumbsDown, 18)
+    }
+
     private fun createSuccessfulSearchResponse(): SearchResult {
         return gson.fromJson(SAMPLE_RESPONSE_JSON, SearchResult::class.java)
     }
 
     private fun createEmptySuccessfulSearchResponse(): SearchResult {
         return gson.fromJson(EMPTY_SAMPLE_RESONSE_JSON, SearchResult::class.java)
+    }
+
+    private fun createSuccessfulMulipleSearchResponse(): SearchResult {
+        return gson.fromJson(SAMPLE_MULTIPLE_RESPONSE_JSON, SearchResult::class.java)
     }
 
     private companion object {
@@ -290,6 +340,50 @@ class SearchViewModelTest : KoinTest {
                 "            \"written_on\": \"2015-10-06T00:00:00.000Z\",\n" +
                 "            \"example\": \"\\\"He's so sweet because he says [nice things] that have [a cute] [effect]\\\"\",\n" +
                 "            \"thumbs_down\": 18\n" +
+                "        }\n" +
+                "   ]\n" +
+                "}"
+
+        const val SAMPLE_MULTIPLE_RESPONSE_JSON = "{\n" +
+                "    \"list\": [\n" +
+                "        {\n" +
+                "            \"definition\": \"[Cute]+[nice]\",\n" +
+                "            \"permalink\": \"http://sweet.urbanup.com/8413115\",\n" +
+                "            \"thumbs_up\": 81,\n" +
+                "            \"sound_urls\": [],\n"+
+                "            \"author\": \"Joostice\",\n" +
+                "            \"word\": \"Sweet\",\n" +
+                "            \"defid\": 8413115,\n" +
+                "            \"current_vote\": \"\",\n" +
+                "            \"written_on\": \"2015-10-06T00:00:00.000Z\",\n" +
+                "            \"example\": \"\\\"He's so sweet because he says [nice things] that have [a cute] [effect]\\\"\",\n" +
+                "            \"thumbs_down\": 18\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"definition\": \"[Cute]+[nice]\",\n" +
+                "            \"permalink\": \"http://sweet.urbanup.com/8413115\",\n" +
+                "            \"thumbs_up\": 200,\n" +
+                "            \"sound_urls\": [],\n"+
+                "            \"author\": \"Joostice3\",\n" +
+                "            \"word\": \"Sweet\",\n" +
+                "            \"defid\": 8413200,\n" +
+                "            \"current_vote\": \"\",\n" +
+                "            \"written_on\": \"2015-10-06T00:00:00.000Z\",\n" +
+                "            \"example\": \"\\\"He's so sweet because he says [nice things] that have [a cute] [effect]\\\"\",\n" +
+                "            \"thumbs_down\": 19\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"definition\": \"[Cute]+[nice]\",\n" +
+                "            \"permalink\": \"http://sweet.urbanup.com/8413115\",\n" +
+                "            \"thumbs_up\": 5,\n" +
+                "            \"sound_urls\": [],\n"+
+                "            \"author\": \"Joostice2\",\n" +
+                "            \"word\": \"Sweet\",\n" +
+                "            \"defid\": 8413119,\n" +
+                "            \"current_vote\": \"\",\n" +
+                "            \"written_on\": \"2015-10-06T00:00:00.000Z\",\n" +
+                "            \"example\": \"\\\"He's so sweet because he says [nice things] that have [a cute] [effect]\\\"\",\n" +
+                "            \"thumbs_down\": 25\n" +
                 "        }\n" +
                 "   ]\n" +
                 "}"

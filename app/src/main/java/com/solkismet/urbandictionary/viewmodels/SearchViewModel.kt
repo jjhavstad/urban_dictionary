@@ -103,6 +103,28 @@ class SearchViewModel(
         return searchResult
     }
 
+    fun sortResultsByThumbsUp(): List<WordDetail>? {
+        return searchResult.value?.let { _searchResult ->
+            mutableListOf<WordDetail>().apply {
+                addAll(_searchResult.list)
+                sortByDescending { _wordDetail ->
+                    _wordDetail.thumbsUp
+                }
+            }
+        }
+    }
+
+    fun sortResultsByThumbsDown(): List<WordDetail>? {
+        return searchResult.value?.let { _searchResult ->
+            mutableListOf<WordDetail>().apply {
+                addAll(_searchResult.list)
+                sortByDescending { _wordDetail ->
+                    _wordDetail.thumbsDown
+                }
+            }
+        }
+    }
+
     private fun searchTerm(term: String) {
         onSearchAction.clearSort()
         onSearchAction.setIsRefreshing(true)
