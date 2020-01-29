@@ -256,8 +256,4 @@ class SearchActivity : AppCompatActivity(),
     private fun setSearchResult(data: SearchResult?) {
         viewModel?.handleSearchResults(data)
     }
-
-    private companion object {
-        const val SEARCH_RESULT_KEY = "search_result_key"
-    }
 }
