@@ -55,6 +55,7 @@ class SearchViewModel(
     class Factory(
         private val onSearchAction: OnSearchAction
     ) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             return SearchViewModel(onSearchAction) as T
         }
