@@ -50,7 +50,7 @@ class SearchActivity : AppCompatActivity(),
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putParcelableArray(
             SEARCH_RESULT_KEY,
-            viewModel?.searchResult?.value?.list?.toTypedArray()
+            viewModel?.getSearchResult()?.value?.list?.toTypedArray()
         )
         super.onSaveInstanceState(outState)
     }
@@ -65,7 +65,7 @@ class SearchActivity : AppCompatActivity(),
     }
 
     override fun sortByThumbsUp() {
-        viewModel?.searchResult?.value?.let { _searchResult ->
+        viewModel?.getSearchResult()?.value?.let { _searchResult ->
             _searchResult.list.sortByDescending { _wordDetail ->
                 _wordDetail.thumbsUp
             }
@@ -75,7 +75,7 @@ class SearchActivity : AppCompatActivity(),
     }
 
     override fun sortByThumbsDown() {
-        viewModel?.searchResult?.value?.let { _searchResult ->
+        viewModel?.getSearchResult()?.value?.let { _searchResult ->
             _searchResult.list.sortByDescending { _wordDetail ->
                 _wordDetail.thumbsDown
             }
@@ -173,7 +173,7 @@ class SearchActivity : AppCompatActivity(),
             SearchViewModel.Factory(this)
         ).get(SearchViewModel::class.java)
 
-        viewModel?.searchResult?.observe(this, Observer { _data ->
+        viewModel?.getSearchResult()?.observe(this, Observer { _data ->
             setSearchResult(_data)
         })
     }

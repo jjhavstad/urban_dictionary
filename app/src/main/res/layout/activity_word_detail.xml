@@ -29,7 +29,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/view_item_margin"
-                android:text="@{String.valueOf(view_model.searchResultItem.thumbsUp)}"
+                android:text="@{String.valueOf(view_model.getResultItem().thumbsUp)}"
                 app:layout_constraintEnd_toStartOf="@id/detail_item_thumbs_down_imageview"
                 app:layout_constraintTop_toTopOf="parent"/>
 
@@ -47,7 +47,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/view_item_margin"
-                android:text="@{String.valueOf(view_model.searchResultItem.thumbsDown)}"
+                android:text="@{String.valueOf(view_model.getResultItem().thumbsDown)}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
 
@@ -77,7 +77,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/view_item_margin"
-                android:text="@{view_model.searchResultItem.definition}"
+                android:text="@{view_model.getResultItem().definition}"
                 style="@style/StandardText"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -99,7 +99,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/view_item_margin"
-                android:text="@{view_model.searchResultItem.example}"
+                android:text="@{view_model.getResultItem().example}"
                 style="@style/StandardText"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

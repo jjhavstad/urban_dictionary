@@ -21,7 +21,7 @@
                 android:id="@+id/search_result_item_word_textview"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@{view_model.searchResultItem.word}"
+                android:text="@{view_model.getResultItem().word}"
                 android:singleLine="true"
                 android:ellipsize="end"
                 android:layout_margin="@dimen/view_item_margin"
@@ -35,7 +35,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/view_item_margin"
-                android:text="@{view_model.searchResultItem.definition}"
+                android:text="@{view_model.getResultItem().definition}"
                 style="@style/StandardText"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -55,7 +55,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/view_item_margin"
-                android:text="@{String.valueOf(view_model.searchResultItem.thumbsUp)}"
+                android:text="@{String.valueOf(view_model.getResultItem().thumbsUp)}"
                 app:layout_constraintStart_toEndOf="@id/search_result_item_thumbs_up_imageview"
                 app:layout_constraintTop_toBottomOf="@id/search_result_item_definition_textview"/>
 
@@ -73,7 +73,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/view_item_margin"
-                android:text="@{String.valueOf(view_model.searchResultItem.thumbsDown)}"
+                android:text="@{String.valueOf(view_model.getResultItem().thumbsDown)}"
                 app:layout_constraintStart_toEndOf="@id/search_result_item_thumbs_down_imageview"
                 app:layout_constraintTop_toBottomOf="@id/search_result_item_definition_textview"/>
 

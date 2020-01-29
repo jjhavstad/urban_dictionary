@@ -28,7 +28,7 @@ class SearchListAdapter(private val onItemClicked: SearchViewModel.OnItemClicked
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         getItem(position).let { _wordDetail ->
             holder.binding.viewModel = WordDetailViewModel()
-            holder.binding.viewModel?.searchResultItem?.value = _wordDetail
+            holder.binding.viewModel?.setResultItem(_wordDetail)
             holder.binding.root.setOnClickListener {
                 onItemClicked.click(_wordDetail)
             }

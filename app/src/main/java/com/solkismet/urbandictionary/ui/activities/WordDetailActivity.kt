@@ -114,7 +114,7 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
     private fun initViewModel() {
         viewModel = ViewModelProviders.of(this).get(WordDetailViewModel::class.java)
         intent?.let {
-            viewModel?.searchResultItem?.value = intent.getParcelableExtra(DATA_KEY)
+            viewModel?.setResultItem(intent.getParcelableExtra(DATA_KEY))
         }
     }
 
@@ -123,11 +123,11 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
         binding?.viewModel = viewModel
         val adapter = SoundListAdapter(application, activity = this, onSoundClickAction = this)
         binding?.detailItemSoundSampleList?.adapter = adapter
-        adapter.submitList(viewModel?.searchResultItem?.value?.soundUrls)
+        adapter.submitList(viewModel?.getResultItem()?.value?.soundUrls)
     }
 
     private fun initToolbar() {
-        supportActionBar?.title = viewModel?.searchResultItem?.value?.word
+        supportActionBar?.title = viewModel?.getResultItem()?.value?.word
     }
 
     private fun registerNetworkConnectivityListener() {

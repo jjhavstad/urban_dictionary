@@ -1,5 +1,6 @@
 package com.solkismet.urbandictionary.viewmodels
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -44,7 +45,7 @@ class SearchViewModel(
         fun hideEmptySearchResults()
     }
 
-    val searchResult = MutableLiveData<SearchResult>()
+    private val searchResult = MutableLiveData<SearchResult>()
     var online: Boolean = true
     val disposables = CompositeDisposable()
     private val searchService: SearchService by inject()
@@ -95,6 +96,10 @@ class SearchViewModel(
 
     fun saveWord(wordDetail: WordDetail) {
         wordDetailDao.insert(wordDetail)
+    }
+
+    fun getSearchResult(): LiveData<SearchResult> {
+        return searchResult
     }
 
     private fun searchTerm(term: String) {

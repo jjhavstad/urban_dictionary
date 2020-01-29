@@ -64,7 +64,7 @@ class SearchViewModelTest : KoinTest {
         viewModel.processSearchQuery("")
 
         //THEN
-        assertEquals(viewModel.searchResult.value, null)
+        assertEquals(viewModel.getSearchResult().value, null)
     }
 
     @Test
@@ -112,11 +112,11 @@ class SearchViewModelTest : KoinTest {
         viewModel.processSearchQuery("sweet")
 
         //THEN
-        assertNotNull(viewModel.searchResult.value)
-        assertNotNull(viewModel.searchResult.value?.list)
-        assertEquals(viewModel.searchResult.value?.list?.size, 1)
-        assertNotNull(viewModel.searchResult.value?.list?.get(0))
-        assertEquals(viewModel.searchResult.value?.list?.get(0)?.word, "Sweet")
+        assertNotNull(viewModel.getSearchResult().value)
+        assertNotNull(viewModel.getSearchResult().value?.list)
+        assertEquals(viewModel.getSearchResult().value?.list?.size, 1)
+        assertNotNull(viewModel.getSearchResult().value?.list?.get(0))
+        assertEquals(viewModel.getSearchResult().value?.list?.get(0)?.word, "Sweet")
     }
 
     @Test
@@ -238,11 +238,11 @@ class SearchViewModelTest : KoinTest {
         viewModel.processSearchQuery("sweet")
 
         //THEN
-        assertNotNull(viewModel.searchResult.value)
-        assertNotNull(viewModel.searchResult.value?.list)
-        assertEquals(viewModel.searchResult.value?.list?.size, 1)
-        assertNotNull(viewModel.searchResult.value?.list?.get(0))
-        assertEquals(viewModel.searchResult.value?.list?.get(0)?.word, "Sweet")
+        assertNotNull(viewModel.getSearchResult().value)
+        assertNotNull(viewModel.getSearchResult().value?.list)
+        assertEquals(viewModel.getSearchResult().value?.list?.size, 1)
+        assertNotNull(viewModel.getSearchResult().value?.list?.get(0))
+        assertEquals(viewModel.getSearchResult().value?.list?.get(0)?.word, "Sweet")
     }
 
     @Test
@@ -257,9 +257,9 @@ class SearchViewModelTest : KoinTest {
         viewModel.processSearchQuery("sweet")
 
         //THEN
-        assertNotNull(viewModel.searchResult.value)
-        assertNotNull(viewModel.searchResult.value?.list)
-        assertEquals(viewModel.searchResult.value?.list?.size, 0)
+        assertNotNull(viewModel.getSearchResult().value)
+        assertNotNull(viewModel.getSearchResult().value?.list)
+        assertEquals(viewModel.getSearchResult().value?.list?.size, 0)
     }
 
     private fun createSuccessfulSearchResponse(): SearchResult {

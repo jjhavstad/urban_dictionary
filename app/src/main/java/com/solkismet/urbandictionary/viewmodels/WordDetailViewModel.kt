@@ -1,12 +1,12 @@
 package com.solkismet.urbandictionary.viewmodels
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.solkismet.urbandictionary.data.models.WordDetail
 
-class WordDetailViewModel(
-    val searchResultItem: MutableLiveData<WordDetail> = MutableLiveData()
-) : ViewModel() {
+class WordDetailViewModel : ViewModel() {
+    private val searchResultItem: MutableLiveData<WordDetail> = MutableLiveData()
 
     var online: Boolean = true
 
@@ -16,6 +16,16 @@ class WordDetailViewModel(
     }
 
     var onSoundAction: OnSoundAction? = null
+
+    fun setResultItem(wordDetail: WordDetail?) {
+        wordDetail?.let {
+            searchResultItem.value = it
+        }
+    }
+
+    fun getResultItem(): LiveData<WordDetail> {
+        return searchResultItem
+    }
 
     fun playSound(soundUrl: String, position: Int) {
         if (online) {
