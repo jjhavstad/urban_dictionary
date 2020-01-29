@@ -51,7 +51,6 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
         super.onCreate(savedInstanceState)
         initViewModel()
         initDataBinding()
-        initToolbar()
         registerNetworkConnectivityListener()
     }
 
@@ -127,6 +126,7 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
                 ?.subscribe(
                     {
                         viewModel?.setResultItem(it)
+                        supportActionBar?.title = viewModel?.getResultItem()?.value?.word
                     },
                     {
                         binding?.root?.let { _rootView ->
@@ -151,10 +151,6 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
         val adapter = SoundListAdapter(application, activity = this, onSoundClickAction = this)
         binding?.detailItemSoundSampleList?.adapter = adapter
         adapter.submitList(viewModel?.getResultItem()?.value?.soundUrls)
-    }
-
-    private fun initToolbar() {
-        supportActionBar?.title = viewModel?.getResultItem()?.value?.word
     }
 
     private fun registerNetworkConnectivityListener() {
