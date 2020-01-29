@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.solkismet.urbandictionary.R
 import com.solkismet.urbandictionary.data.models.SearchResult
@@ -58,20 +59,26 @@ class SearchActivity : AppCompatActivity(),
 
     override fun sortByThumbsUp() {
         viewModel?.getSearchResult()?.value?.let { _searchResult ->
-            _searchResult.list.sortByDescending { _wordDetail ->
+            val sortedSearchResult = mutableListOf<WordDetail>().apply {
+                addAll(_searchResult.list)
+            }
+            sortedSearchResult.sortByDescending { _wordDetail ->
                 _wordDetail.thumbsUp
             }
-            setSearchResult(_searchResult)
+            setSearchResult(SearchResult(sortedSearchResult))
             setThumbsUpSelected()
         }
     }
 
     override fun sortByThumbsDown() {
         viewModel?.getSearchResult()?.value?.let { _searchResult ->
-            _searchResult.list.sortByDescending { _wordDetail ->
+            val sortedSearchResult = mutableListOf<WordDetail>().apply {
+                addAll(_searchResult.list)
+            }
+            sortedSearchResult.sortByDescending { _wordDetail ->
                 _wordDetail.thumbsDown
             }
-            setSearchResult(_searchResult)
+            setSearchResult(SearchResult(sortedSearchResult))
             setThumbsDownSelected()
         }
     }
@@ -177,6 +184,31 @@ class SearchActivity : AppCompatActivity(),
         binding?.onSortByThumbsUpListener = this
         binding?.onSortByThumbsDownListener = this
         binding?.searchListView?.adapter = SearchListAdapter(this)
+        (binding?.searchListView?.adapter as SearchListAdapter).registerAdapterDataObserver(object: RecyclerView.AdapterDataObserver() {
+            override fun onChanged() {
+                binding?.searchListView?.scrollToPosition(0)
+            }
+
+            override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
+                binding?.searchListView?.scrollToPosition(0)
+            }
+
+            override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
+                binding?.searchListView?.scrollToPosition(0)
+            }
+
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                binding?.searchListView?.scrollToPosition(0)
+            }
+
+            override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
+                binding?.searchListView?.scrollToPosition(0)
+            }
+
+            override fun onItemRangeChanged(positionStart: Int, itemCount: Int, payload: Any?) {
+                binding?.searchListView?.scrollToPosition(0)
+            }
+        })
     }
 
     private fun initSearchBar() {
