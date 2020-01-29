@@ -8,15 +8,22 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.solkismet.urbandictionary.R
 import com.solkismet.urbandictionary.data.models.WordDetail
 import com.solkismet.urbandictionary.databinding.ActivityWordDetailBinding
 import com.solkismet.urbandictionary.ui.adapters.SoundListAdapter
+import com.solkismet.urbandictionary.ui.extensions.withColor
 import com.solkismet.urbandictionary.ui.utils.NetworkListenerHelper
 import com.solkismet.urbandictionary.viewmodels.WordDetailViewModel
+import io.reactivex.Completable
+import io.reactivex.Scheduler
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import java.io.IOException
 import java.lang.IllegalArgumentException
 import java.lang.IllegalStateException
@@ -29,7 +36,7 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
         @JvmStatic
         fun getIntent(context: Context, wordDetail: WordDetail): Intent {
             return Intent(context, WordDetailActivity::class.java)
-                .putExtra(DATA_KEY, wordDetail)
+                .putExtra(DATA_KEY, wordDetail.defId)
         }
     }
 
@@ -114,7 +121,27 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
     private fun initViewModel() {
         viewModel = ViewModelProviders.of(this).get(WordDetailViewModel::class.java)
         intent?.let {
-            viewModel?.setResultItem(intent.getParcelableExtra(DATA_KEY))
+            viewModel?.getWordDetailById(intent.getLongExtra(DATA_KEY, -1L))
+                ?.subscribeOn(Schedulers.io())
+                ?.observeOn(AndroidSchedulers.mainThread())
+                ?.subscribe(
+                    {
+                        viewModel?.setResultItem(it)
+                    },
+                    {
+                        binding?.root?.let { _rootView ->
+                            Snackbar.make(
+                                _rootView,
+                                R.string.word_detail_retrieval_error,
+                                Snackbar.LENGTH_SHORT
+                            ).apply {
+                                setAction(R.string.search_api_close_error, null)
+                                withColor(ContextCompat.getColor(this@WordDetailActivity, android.R.color.holo_red_dark))
+                                show()
+                            }
+                        }
+                    }
+                )
         }
     }
 

@@ -12,6 +12,9 @@ interface WordDetailDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(wordDetail: WordDetail)
 
+    @Query("SELECT * FROM word_details WHERE defid = :defId")
+    fun getWordDetailById(defId: Long): Flowable<WordDetail>
+
     @Query("SELECT * FROM word_details WHERE word = :word COLLATE NOCASE")
     fun searchForWord(word: String): Flowable<MutableList<WordDetail>>
 }

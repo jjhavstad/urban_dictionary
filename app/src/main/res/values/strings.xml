@@ -3,6 +3,7 @@
     <string name="search_input_for_results">Enter some text to search for some urban words.</string>
     <string name="search_no_results">No results</string>
     <string name="search_api_error">Error retrieving search results. Please try again later.</string>
+    <string name="word_detail_retrieval_error">Error retrieving word details. Please try again later.</string>
     <string name="search_api_close_error">Close</string>
     <string name="detail_definition_title">Definition</string>
     <string name="detail_examples_title">Examples</string>

@@ -3,12 +3,18 @@ package com.solkismet.urbandictionary.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.solkismet.urbandictionary.data.db.WordDetailDao
 import com.solkismet.urbandictionary.data.models.WordDetail
+import io.reactivex.Flowable
+import org.koin.core.KoinComponent
+import org.koin.core.inject
 
-class WordDetailViewModel : ViewModel() {
+class WordDetailViewModel : ViewModel(), KoinComponent {
     private val searchResultItem: MutableLiveData<WordDetail> = MutableLiveData()
 
     var online: Boolean = true
+
+    private val wordDetailDao: WordDetailDao by inject()
 
     interface OnSoundAction {
         fun playSound(soundUrl: String, position: Int)
@@ -21,6 +27,10 @@ class WordDetailViewModel : ViewModel() {
         wordDetail?.let {
             searchResultItem.value = it
         }
+    }
+
+    fun getWordDetailById(defId: Long): Flowable<WordDetail> {
+        return wordDetailDao.getWordDetailById(defId)
     }
 
     fun getResultItem(): LiveData<WordDetail> {
