@@ -47,14 +47,6 @@ class SearchActivity : AppCompatActivity(),
         viewModel?.clearDisposables()
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putParcelableArray(
-            SEARCH_RESULT_KEY,
-            viewModel?.getSearchResult()?.value?.list?.toTypedArray()
-        )
-        super.onSaveInstanceState(outState)
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         unregisterNetworkConnectivityListener()
