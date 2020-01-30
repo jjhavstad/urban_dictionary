@@ -23,6 +23,7 @@ import com.solkismet.urbandictionary.viewmodels.WordDetailViewModel
 import io.reactivex.Completable
 import io.reactivex.Scheduler
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import java.io.IOException
 import java.lang.IllegalArgumentException
@@ -46,6 +47,7 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
         MediaPlayer()
     }
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    private val disposables = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +59,7 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
     override fun onStop() {
         super.onStop()
         mediaPlayer.release()
+        disposables.clear()
     }
 
     override fun onDestroy() {
@@ -120,28 +123,31 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
     private fun initViewModel() {
         viewModel = ViewModelProviders.of(this).get(WordDetailViewModel::class.java)
         intent?.let {
-            viewModel?.getWordDetailById(intent.getLongExtra(DATA_KEY, -1L))
-                ?.subscribeOn(Schedulers.io())
-                ?.observeOn(AndroidSchedulers.mainThread())
-                ?.subscribe(
-                    {
-                        viewModel?.setResultItem(it)
-                        supportActionBar?.title = viewModel?.getResultItem()?.value?.word
-                    },
-                    {
-                        binding?.root?.let { _rootView ->
-                            Snackbar.make(
-                                _rootView,
-                                R.string.word_detail_retrieval_error,
-                                Snackbar.LENGTH_SHORT
-                            ).apply {
-                                setAction(R.string.search_api_close_error, null)
-                                withColor(ContextCompat.getColor(this@WordDetailActivity, android.R.color.holo_red_dark))
-                                show()
+            viewModel?.getWordDetailById(intent.getLongExtra(DATA_KEY, -1L))?.let {
+                disposables.add(
+                    it.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                            {
+                                viewModel?.setResultItem(it)
+                                supportActionBar?.title = viewModel?.getResultItem()?.value?.word
+                            },
+                            {
+                                binding?.root?.let { _rootView ->
+                                    Snackbar.make(
+                                        _rootView,
+                                        R.string.word_detail_retrieval_error,
+                                        Snackbar.LENGTH_SHORT
+                                    ).apply {
+                                        setAction(R.string.search_api_close_error, null)
+                                        withColor(ContextCompat.getColor(this@WordDetailActivity, android.R.color.holo_red_dark))
+                                        show()
+                                    }
+                                }
                             }
-                        }
-                    }
+                        )
                 )
+            }
         }
     }
 
