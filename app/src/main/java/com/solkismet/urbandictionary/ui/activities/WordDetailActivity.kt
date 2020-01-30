@@ -95,21 +95,21 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
             } else {
                 Log.e("MediaPlayer", "Caught IllegalArgumentException: \n${e.stackTrace.joinToString("\n")}")
             }
-            mediaPlayer.release()
+            showError()
         } catch (e: IOException) {
             if (!TextUtils.isEmpty(e.message)) {
                 Log.e("MediaPlayer", "Error preparing media player: ${e.message}\n${e.stackTrace.joinToString("\n")}")
             } else {
                 Log.e("MediaPlayer", "Caught IOException: \n${e.stackTrace.joinToString("\n")}")
             }
-            mediaPlayer.release()
+            showError()
         } catch (e: IllegalStateException) {
             if (!TextUtils.isEmpty(e.message)) {
                 Log.e("MediaPlayer", "Error preparing media player: ${e.message}\n${e.stackTrace.joinToString("\n")}")
             } else {
                 Log.e("MediaPlayer", "Caught IOException: \n${e.stackTrace.joinToString("\n")}")
             }
-            mediaPlayer.release()
+            showError()
         }
     }
 
@@ -174,6 +174,20 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
         networkCallback?.let { _networkCallback ->
             val connectivityManager: ConnectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             NetworkListenerHelper.unregisterNetworkStateChangeListener(connectivityManager, _networkCallback)
+        }
+    }
+
+    private fun showError() {
+        binding?.root?.let { _rootView ->
+            Snackbar.make(
+                _rootView,
+                R.string.play_word_sample_error,
+                Snackbar.LENGTH_SHORT
+            ).apply {
+                setAction(R.string.search_api_close_error, null)
+                withColor(ContextCompat.getColor(this@WordDetailActivity, android.R.color.holo_red_dark))
+                show()
+            }
         }
     }
 }
