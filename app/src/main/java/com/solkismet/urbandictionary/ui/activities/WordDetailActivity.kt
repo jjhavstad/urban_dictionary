@@ -128,9 +128,12 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
                     it.subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                            {
-                                viewModel?.setResultItem(it)
+                            { _wordDetail ->
+                                viewModel?.setResultItem(_wordDetail)
                                 supportActionBar?.title = viewModel?.getResultItem()?.value?.word
+                                (binding?.detailItemSoundSampleList?.adapter as SoundListAdapter).apply {
+                                    submitList(viewModel?.getResultItem()?.value?.soundUrls)
+                                }
                             },
                             {
                                 binding?.root?.let { _rootView ->
@@ -156,7 +159,6 @@ class WordDetailActivity : AppCompatActivity(), SoundListAdapter.OnSoundClickAct
         binding?.viewModel = viewModel
         val adapter = SoundListAdapter(application, activity = this, onSoundClickAction = this)
         binding?.detailItemSoundSampleList?.adapter = adapter
-        adapter.submitList(viewModel?.getResultItem()?.value?.soundUrls)
     }
 
     private fun registerNetworkConnectivityListener() {
