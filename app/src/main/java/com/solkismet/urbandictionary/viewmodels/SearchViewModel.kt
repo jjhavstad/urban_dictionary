@@ -3,10 +3,9 @@ package com.solkismet.urbandictionary.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.solkismet.urbandictionary.data.db.WordDetailDao
 import com.solkismet.urbandictionary.data.models.SearchResult
 import com.solkismet.urbandictionary.data.models.WordDetail
-import com.solkismet.urbandictionary.data.network.SearchService
+import com.solkismet.urbandictionary.data.repo.WordDetailRepository
 import io.reactivex.Completable
 import io.reactivex.disposables.CompositeDisposable
 import org.koin.core.KoinComponent
@@ -45,8 +44,7 @@ class SearchViewModel: ViewModel(), KoinComponent {
     private val searchActionEvent = MutableLiveData<OnSearchAction>()
     var online: Boolean = true
     val disposables = CompositeDisposable()
-    private val searchService: SearchService by inject()
-    private val wordDetailDao: WordDetailDao by inject()
+    private val wordDetailRepository: WordDetailRepository by inject()
     private var currentSearchTerm: String? = null
 
     fun processSearchQuery(query: String) {
@@ -117,32 +115,20 @@ class SearchViewModel: ViewModel(), KoinComponent {
         searchActionEvent.value = OnSearchAction.CLEAR_SORT
         searchActionEvent.value = OnSearchAction.SET_IS_REFRESHING
         disposables.add(
-            when (online) {
-                true -> searchService.search(term).subscribe(
-                    {
-                        if (term == currentSearchTerm) {
-                            setSearchResult(it)
-                            searchActionEvent.value = OnSearchAction.SAVE_LIST
+            wordDetailRepository.searchForWord(term, online).subscribe(
+                {
+                    if (term == currentSearchTerm) {
+                        setSearchResult(it)
+                        if (online) {
+                            searchActionEvent.postValue(OnSearchAction.SAVE_LIST)
                         }
-                        searchActionEvent.value = OnSearchAction.SET_IS_NOT_REFRESHING
-                    }, {
-                        searchActionEvent.value = OnSearchAction.SET_IS_NOT_REFRESHING
-                        searchActionEvent.value = OnSearchAction.SHOW_ERROR
                     }
-                )
-                false -> wordDetailDao.searchForWord(term).subscribe(
-                    {
-                        if (term == currentSearchTerm) {
-                            setSearchResult(SearchResult(it))
-                        }
-                        searchActionEvent.value = OnSearchAction.SET_IS_NOT_REFRESHING
-                    },
-                    {
-                        searchActionEvent.value = OnSearchAction.SET_IS_NOT_REFRESHING
-                        searchActionEvent.value = OnSearchAction.SHOW_ERROR
-                    }
-                )
-            }
+                    searchActionEvent.postValue(OnSearchAction.SET_IS_NOT_REFRESHING)
+                }, {
+                    searchActionEvent.postValue(OnSearchAction.SET_IS_NOT_REFRESHING)
+                    searchActionEvent.postValue(OnSearchAction.SHOW_ERROR)
+                }
+            )
         )
     }
 
@@ -151,6 +137,6 @@ class SearchViewModel: ViewModel(), KoinComponent {
     }
 
     private fun saveWord(wordDetail: WordDetail) {
-        wordDetailDao.insert(wordDetail)
+        wordDetailRepository.saveWord(wordDetail)
     }
 }

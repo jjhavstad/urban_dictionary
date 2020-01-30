@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import com.solkismet.urbandictionary.data.db.WordDetailDao
 import com.solkismet.urbandictionary.data.di.dataBaseModule
 import com.solkismet.urbandictionary.data.di.networkModule
+import com.solkismet.urbandictionary.data.di.repositoryModule
 import com.solkismet.urbandictionary.data.models.SearchResult
 import com.solkismet.urbandictionary.data.network.SearchService
 import io.reactivex.Flowable
@@ -33,7 +34,7 @@ class SearchViewModelTest : KoinTest {
 
     @Before
     fun initialize() {
-        startKoin { modules(networkModule, dataBaseModule) }
+        startKoin { modules(networkModule, dataBaseModule, repositoryModule) }
         viewModel = SearchViewModel()
     }
 
@@ -260,7 +261,7 @@ class SearchViewModelTest : KoinTest {
     }
 
     @Test
-    fun `processSearchQuery SHOULD not return any elements WHEN search query is not empty AND search api returns a valid response AND network is turned of AND valid data is not in the database`() {
+    fun `processSearchQuery SHOULD not return any elements WHEN search query is not empty AND search api returns a valid response AND network is turned off AND valid data is not in the database`() {
         //GIVEN
         viewModel.online = false
         declareMock<WordDetailDao> {

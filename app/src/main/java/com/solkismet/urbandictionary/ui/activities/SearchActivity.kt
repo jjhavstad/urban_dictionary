@@ -157,15 +157,17 @@ class SearchActivity : AppCompatActivity(),
         viewModel = ViewModelProviders.of(this).get(SearchViewModel::class.java)
 
         viewModel?.getSearchActionEvent()?.observe(this, Observer {
-            when (it) {
-                SearchViewModel.OnSearchAction.CLEAR_SORT -> clearSort()
-                SearchViewModel.OnSearchAction.SHOW_ERROR -> showError()
-                SearchViewModel.OnSearchAction.SET_IS_REFRESHING -> setIsRefreshing(true)
-                SearchViewModel.OnSearchAction.SET_IS_NOT_REFRESHING -> setIsRefreshing(false)
-                SearchViewModel.OnSearchAction.SAVE_LIST -> saveList()
-                SearchViewModel.OnSearchAction.SHOW_START_SEARCH -> showStartSearch()
-                SearchViewModel.OnSearchAction.SHOW_EMPTY_SEARCH_RESULTS -> showEmptySearchResults()
-                SearchViewModel.OnSearchAction.HIDE_EMPTY_SEARCH_RESULTS -> hideEmptySearchResults()
+            it?.let {
+                when (it) {
+                    SearchViewModel.OnSearchAction.CLEAR_SORT -> clearSort()
+                    SearchViewModel.OnSearchAction.SHOW_ERROR -> showError()
+                    SearchViewModel.OnSearchAction.SET_IS_REFRESHING -> setIsRefreshing(true)
+                    SearchViewModel.OnSearchAction.SET_IS_NOT_REFRESHING -> setIsRefreshing(false)
+                    SearchViewModel.OnSearchAction.SAVE_LIST -> saveList()
+                    SearchViewModel.OnSearchAction.SHOW_START_SEARCH -> showStartSearch()
+                    SearchViewModel.OnSearchAction.SHOW_EMPTY_SEARCH_RESULTS -> showEmptySearchResults()
+                    SearchViewModel.OnSearchAction.HIDE_EMPTY_SEARCH_RESULTS -> hideEmptySearchResults()
+                }
             }
         })
 
