@@ -125,7 +125,6 @@ class SearchViewModel: ViewModel(), KoinComponent {
                         }
                     }
                     searchActionEvent.postToQueue(OnSearchAction.SET_IS_NOT_REFRESHING)
-                    searchActionEvent.postToQueue(OnSearchAction.SHOW_ERROR)
                 }, {
                     searchActionEvent.postToQueue(OnSearchAction.SET_IS_NOT_REFRESHING)
                     searchActionEvent.postToQueue(OnSearchAction.SHOW_ERROR)
