@@ -7,6 +7,7 @@ import com.solkismet.urbandictionary.data.db.WordDetailDao
 import com.solkismet.urbandictionary.data.models.SearchResult
 import com.solkismet.urbandictionary.data.models.WordDetail
 import com.solkismet.urbandictionary.data.network.SearchService
+import io.reactivex.Completable
 import io.reactivex.disposables.CompositeDisposable
 import org.koin.core.KoinComponent
 import org.koin.core.inject
@@ -29,22 +30,20 @@ class SearchViewModel: ViewModel(), KoinComponent {
         fun sortByThumbsDown()
     }
 
-    interface OnSearchAction {
-        fun setThumbsUpSelected()
-        fun setThumbsDownSelected()
-        fun clearSort()
-        fun showError()
-        fun setIsRefreshing(refreshing: Boolean)
-        fun updateList(list: List<WordDetail>?)
-        fun saveList(list: List<WordDetail>?)
-        fun showStartSearch()
-        fun showEmptySearchResults()
-        fun hideEmptySearchResults()
+    enum class OnSearchAction {
+        CLEAR_SORT,
+        SHOW_ERROR,
+        SET_IS_REFRESHING,
+        SET_IS_NOT_REFRESHING,
+        SAVE_LIST,
+        SHOW_START_SEARCH,
+        SHOW_EMPTY_SEARCH_RESULTS,
+        HIDE_EMPTY_SEARCH_RESULTS
     }
 
     private val searchResult = MutableLiveData<SearchResult>()
+    private val searchActionEvent = MutableLiveData<OnSearchAction>()
     var online: Boolean = true
-    var onSearchAction: OnSearchAction? = null
     val disposables = CompositeDisposable()
     private val searchService: SearchService by inject()
     private val wordDetailDao: WordDetailDao by inject()
@@ -53,7 +52,7 @@ class SearchViewModel: ViewModel(), KoinComponent {
     fun processSearchQuery(query: String) {
         currentSearchTerm = query
         if (query.isEmpty()) {
-            onSearchAction?.clearSort()
+            searchActionEvent.value = OnSearchAction.CLEAR_SORT
             setSearchResult(null)
         } else {
             searchTerm(query)
@@ -70,26 +69,24 @@ class SearchViewModel: ViewModel(), KoinComponent {
         }
     }
 
-    fun handleSearchResults(data: SearchResult?) {
-        data?.let { _searchResult ->
-            onSearchAction?.updateList(_searchResult.list)
+    fun handleSearchResults() {
+        searchResult.value?.let { _searchResult ->
             if (_searchResult.list.isEmpty()) {
-                onSearchAction?.showEmptySearchResults()
+                searchActionEvent.value = OnSearchAction.SHOW_EMPTY_SEARCH_RESULTS
             } else {
-                onSearchAction?.hideEmptySearchResults()
+                searchActionEvent.value = OnSearchAction.HIDE_EMPTY_SEARCH_RESULTS
             }
         } ?: run {
-            onSearchAction?.updateList(null)
-            onSearchAction?.showStartSearch()
+            searchActionEvent.value = OnSearchAction.SHOW_START_SEARCH
         }
-    }
-
-    fun saveWord(wordDetail: WordDetail) {
-        wordDetailDao.insert(wordDetail)
     }
 
     fun getSearchResult(): LiveData<SearchResult> {
         return searchResult
+    }
+
+    fun getSearchActionEvent(): LiveData<OnSearchAction> {
+        return searchActionEvent
     }
 
     fun sortResultsByThumbsUp(): SearchResult? {
@@ -108,21 +105,29 @@ class SearchViewModel: ViewModel(), KoinComponent {
         }
     }
 
+    fun saveList(): Completable {
+        return Completable.fromRunnable {
+            searchResult.value?.list?.forEach { _wordDetail ->
+                saveWord(_wordDetail)
+            }
+        }
+    }
+
     private fun searchTerm(term: String) {
-        onSearchAction?.clearSort()
-        onSearchAction?.setIsRefreshing(true)
+        searchActionEvent.value = OnSearchAction.CLEAR_SORT
+        searchActionEvent.value = OnSearchAction.SET_IS_REFRESHING
         disposables.add(
             when (online) {
                 true -> searchService.search(term).subscribe(
                     {
                         if (term == currentSearchTerm) {
-                            onSearchAction?.saveList(it.list)
                             setSearchResult(it)
+                            searchActionEvent.value = OnSearchAction.SAVE_LIST
                         }
-                        onSearchAction?.setIsRefreshing(false)
+                        searchActionEvent.value = OnSearchAction.SET_IS_NOT_REFRESHING
                     }, {
-                        onSearchAction?.setIsRefreshing(false)
-                        onSearchAction?.showError()
+                        searchActionEvent.value = OnSearchAction.SET_IS_NOT_REFRESHING
+                        searchActionEvent.value = OnSearchAction.SHOW_ERROR
                     }
                 )
                 false -> wordDetailDao.searchForWord(term).subscribe(
@@ -130,11 +135,11 @@ class SearchViewModel: ViewModel(), KoinComponent {
                         if (term == currentSearchTerm) {
                             setSearchResult(SearchResult(it))
                         }
-                        onSearchAction?.setIsRefreshing(false)
+                        searchActionEvent.value = OnSearchAction.SET_IS_NOT_REFRESHING
                     },
                     {
-                        onSearchAction?.setIsRefreshing(false)
-                        onSearchAction?.showError()
+                        searchActionEvent.value = OnSearchAction.SET_IS_NOT_REFRESHING
+                        searchActionEvent.value = OnSearchAction.SHOW_ERROR
                     }
                 )
             }
@@ -143,5 +148,9 @@ class SearchViewModel: ViewModel(), KoinComponent {
 
     private fun setSearchResult(data: SearchResult?) {
         searchResult.postValue(data)
+    }
+
+    private fun saveWord(wordDetail: WordDetail) {
+        wordDetailDao.insert(wordDetail)
     }
 }

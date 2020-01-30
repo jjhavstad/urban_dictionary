@@ -20,7 +20,6 @@ import org.koin.test.KoinTest
 import org.koin.test.mock.declareMock
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.BDDMockito.given
-import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.junit.MockitoJUnitRunner
 
@@ -29,15 +28,13 @@ class SearchViewModelTest : KoinTest {
     @Rule
     @JvmField
     val instantExecutorRule = InstantTaskExecutorRule()
-    @Mock private lateinit var onSearchAction: SearchViewModel.OnSearchAction
     private lateinit var viewModel: SearchViewModel
     private val gson = Gson()
 
     @Before
     fun initialize() {
         startKoin { modules(networkModule, dataBaseModule) }
-        onSearchAction = mock(SearchViewModel.OnSearchAction::class.java)
-        viewModel = SearchViewModel(onSearchAction)
+        viewModel = SearchViewModel()
     }
 
     @After
@@ -53,7 +50,10 @@ class SearchViewModelTest : KoinTest {
         viewModel.processSearchQuery("")
 
         //THEN
-        verify(onSearchAction).clearSort()
+        assertEquals(
+            SearchViewModel.OnSearchAction.CLEAR_SORT,
+            viewModel.getSearchActionEvent().getOrAwaitValue()
+        )
     }
 
     @Test
@@ -68,7 +68,7 @@ class SearchViewModelTest : KoinTest {
     }
 
     @Test
-    fun `processSearchQuery SHOULD call clearSort WHEN search query is not empty`() {
+    fun `processSearchQuery SHOULD call clear sort AND set is refreshing WHEN search query is not empty`() {
         //GIVEN
         val searchTerm = "sweet"
         val successfulResponse = createSuccessfulSearchResponse()
@@ -76,28 +76,27 @@ class SearchViewModelTest : KoinTest {
             given(this.search(anyString())).willReturn(Flowable.just(successfulResponse))
         }
 
-        //WHEN
-        viewModel.processSearchQuery(searchTerm)
-
-        //THEN
-        verify(onSearchAction).clearSort()
-        verify(onSearchAction).setIsRefreshing(true)
-    }
-
-    @Test
-    fun `processSearchQuery SHOULD call setIsRefreshing with true WHEN search query is not empty`() {
-        //GIVEN
-        val searchTerm = "sweet"
-        val successfulResponse = createSuccessfulSearchResponse()
-        declareMock<SearchService> {
-            given(this.search(anyString())).willReturn(Flowable.just(successfulResponse))
-        }
+        var firstActionResult: SearchViewModel.OnSearchAction? = null
+        var secondActionResult: SearchViewModel.OnSearchAction? = null
+        viewModel.getSearchActionEvent().getOrAwaitValueWithCallback(
+            mutableListOf<(value: SearchViewModel.OnSearchAction?) -> Unit>().apply {
+                add { firstActionResult = it }
+                add { secondActionResult = it }
+            }
+        )
 
         //WHEN
         viewModel.processSearchQuery(searchTerm)
 
         //THEN
-        verify(onSearchAction).setIsRefreshing(true)
+        assertEquals(
+            SearchViewModel.OnSearchAction.CLEAR_SORT,
+            firstActionResult
+        )
+        assertEquals(
+            SearchViewModel.OnSearchAction.SET_IS_REFRESHING,
+            secondActionResult
+        )
     }
 
     @Test
@@ -114,13 +113,13 @@ class SearchViewModelTest : KoinTest {
         //THEN
         assertNotNull(viewModel.getSearchResult().value)
         assertNotNull(viewModel.getSearchResult().value?.list)
-        assertEquals(viewModel.getSearchResult().value?.list?.size, 1)
+        assertEquals(1, viewModel.getSearchResult().value?.list?.size)
         assertNotNull(viewModel.getSearchResult().value?.list?.get(0))
-        assertEquals(viewModel.getSearchResult().value?.list?.get(0)?.word, "Sweet")
+        assertEquals("Sweet", viewModel.getSearchResult().value?.list?.get(0)?.word)
     }
 
     @Test
-    fun `processSearchQuery SHOULD call setIsRefreshing with false WHEN search query is not empty`() {
+    fun `processSearchQuery SHOULD call set is not refreshing WHEN search query is not empty`() {
         //GIVEN
         val searchTerm = "sweet"
         val successfulResponse = createSuccessfulSearchResponse()
@@ -132,11 +131,14 @@ class SearchViewModelTest : KoinTest {
         viewModel.processSearchQuery(searchTerm)
 
         //THEN
-        verify(onSearchAction).setIsRefreshing(false)
+        assertEquals(
+            SearchViewModel.OnSearchAction.SET_IS_NOT_REFRESHING,
+            viewModel.getSearchActionEvent().getOrAwaitValue()
+        )
     }
 
     @Test
-    fun `processSearchQuery SHOULD call setSearchResult WHEN search query is not empty AND search api returns an error`() {
+    fun `processSearchQuery SHOULD call show error WHEN search query is not empty AND search api returns an error`() {
         //GIVEN
         val throwable = mock(Throwable::class.java)
         declareMock<SearchService> {
@@ -147,11 +149,46 @@ class SearchViewModelTest : KoinTest {
         viewModel.processSearchQuery("sweet")
 
         //THEN
-        verify(onSearchAction).showError()
+        assertEquals(
+            SearchViewModel.OnSearchAction.SHOW_ERROR,
+            viewModel.getSearchActionEvent().getOrAwaitValue()
+        )
     }
 
     @Test
-    fun `refreshSearch SHOULD call searchTerm WHEN current search term is not empty`() {
+    fun `refreshSearch SHOULD call clear sort AND set is refreshing WHEN current search term is not empty`() {
+        //GIVEN
+        val successfulResponse = createSuccessfulSearchResponse()
+        declareMock<SearchService> {
+            given(this.search(anyString())).willReturn(Flowable.just(successfulResponse))
+        }
+
+        var firstActionResult: SearchViewModel.OnSearchAction? = null
+        var secondActionResult: SearchViewModel.OnSearchAction? = null
+        viewModel.getSearchActionEvent().getOrAwaitValueWithCallback(
+            mutableListOf<(value: SearchViewModel.OnSearchAction?) -> Unit>().apply {
+                add { firstActionResult = it }
+                add { secondActionResult = it }
+            }
+        )
+
+        //WHEN
+        viewModel.processSearchQuery("sweet")
+        viewModel.refreshSearch()
+
+        //THEN
+        assertEquals(
+            SearchViewModel.OnSearchAction.CLEAR_SORT,
+            firstActionResult
+        )
+        assertEquals(
+            SearchViewModel.OnSearchAction.SET_IS_REFRESHING,
+            secondActionResult
+        )
+    }
+
+    @Test
+    fun `handleSearchResults SHOULD call hideEmptySearchResults WHEN current search term is not empty`() {
         //GIVEN
         val successfulResponse = createSuccessfulSearchResponse()
         declareMock<SearchService> {
@@ -160,58 +197,32 @@ class SearchViewModelTest : KoinTest {
 
         //WHEN
         viewModel.processSearchQuery("sweet")
-        viewModel.refreshSearch()
+        viewModel.handleSearchResults()
 
         //THEN
-        verify(onSearchAction, times(2)).clearSort()
-        verify(onSearchAction, times(2)).setIsRefreshing(true)
-    }
-
-    @Test
-    fun `handleSearchResults SHOULD call updateList WHEN current search term is empty`() {
-        //GIVEN
-
-        //WHEN
-        viewModel.handleSearchResults(null)
-
-        //THEN
-        verify(onSearchAction).updateList(null)
-    }
-
-    @Test
-    fun `handleSearchResults SHOULD call updateList WHEN current search term is not empty`() {
-        //GIVEN
-        val successfulResponse = createSuccessfulSearchResponse()
-
-        //WHEN
-        viewModel.handleSearchResults(successfulResponse)
-
-        //THEN
-        verify(onSearchAction).updateList(successfulResponse.list)
-    }
-
-    @Test
-    fun `handleSearchResults SHOULD call hideEmptySearchResults WHEN current search term is not empty`() {
-        //GIVEN
-        val successfulResponse = createSuccessfulSearchResponse()
-
-        //WHEN
-        viewModel.handleSearchResults(successfulResponse)
-
-        //THEN
-        verify(onSearchAction).hideEmptySearchResults()
+        assertEquals(
+            SearchViewModel.OnSearchAction.HIDE_EMPTY_SEARCH_RESULTS,
+            viewModel.getSearchActionEvent().getOrAwaitValue()
+        )
     }
 
     @Test
     fun `handleSearchResults SHOULD call hideEmptySearchResults WHEN current search term is empty`() {
         //GIVEN
         val emptySuccessfulResponse = createEmptySuccessfulSearchResponse()
+        declareMock<SearchService> {
+            given(this.search(anyString())).willReturn(Flowable.just(emptySuccessfulResponse))
+        }
 
         //WHEN
-        viewModel.handleSearchResults(emptySuccessfulResponse)
+        viewModel.processSearchQuery("sweet")
+        viewModel.handleSearchResults()
 
         //THEN
-        verify(onSearchAction).showEmptySearchResults()
+        assertEquals(
+            SearchViewModel.OnSearchAction.SHOW_EMPTY_SEARCH_RESULTS,
+            viewModel.getSearchActionEvent().getOrAwaitValue()
+        )
     }
 
     @Test
@@ -219,10 +230,13 @@ class SearchViewModelTest : KoinTest {
         //GIVEN
 
         //WHEN
-        viewModel.handleSearchResults(null)
+        viewModel.handleSearchResults()
 
         //THEN
-        verify(onSearchAction).showStartSearch()
+        assertEquals(
+            SearchViewModel.OnSearchAction.SHOW_START_SEARCH,
+            viewModel.getSearchActionEvent().getOrAwaitValue()
+        )
     }
 
     @Test
@@ -240,9 +254,9 @@ class SearchViewModelTest : KoinTest {
         //THEN
         assertNotNull(viewModel.getSearchResult().value)
         assertNotNull(viewModel.getSearchResult().value?.list)
-        assertEquals(viewModel.getSearchResult().value?.list?.size, 1)
+        assertEquals(1, viewModel.getSearchResult().value?.list?.size)
         assertNotNull(viewModel.getSearchResult().value?.list?.get(0))
-        assertEquals(viewModel.getSearchResult().value?.list?.get(0)?.word, "Sweet")
+        assertEquals("Sweet", viewModel.getSearchResult().value?.list?.get(0)?.word)
     }
 
     @Test
@@ -259,7 +273,7 @@ class SearchViewModelTest : KoinTest {
         //THEN
         assertNotNull(viewModel.getSearchResult().value)
         assertNotNull(viewModel.getSearchResult().value?.list)
-        assertEquals(viewModel.getSearchResult().value?.list?.size, 0)
+        assertEquals(0, viewModel.getSearchResult().value?.list?.size)
     }
 
     @Test
@@ -276,13 +290,13 @@ class SearchViewModelTest : KoinTest {
 
         // THEN
         assertNotNull(sortedList)
-        assertEquals(sortedList?.size, 3)
+        assertEquals(3, sortedList?.size)
         assertNotNull(sortedList?.get(0))
-        assertEquals(sortedList?.get(0)?.thumbsUp, 200)
+        assertEquals(200, sortedList?.get(0)?.thumbsUp)
         assertNotNull(sortedList?.get(1))
-        assertEquals(sortedList?.get(1)?.thumbsUp, 81)
+        assertEquals(81, sortedList?.get(1)?.thumbsUp)
         assertNotNull(sortedList?.get(2))
-        assertEquals(sortedList?.get(2)?.thumbsUp, 5)
+        assertEquals(5, sortedList?.get(2)?.thumbsUp)
     }
 
     @Test
@@ -299,13 +313,13 @@ class SearchViewModelTest : KoinTest {
 
         // THEN
         assertNotNull(sortedList)
-        assertEquals(sortedList?.size, 3)
+        assertEquals(3, sortedList?.size)
         assertNotNull(sortedList?.get(0))
-        assertEquals(sortedList?.get(0)?.thumbsDown, 25)
+        assertEquals(25, sortedList?.get(0)?.thumbsDown)
         assertNotNull(sortedList?.get(1))
-        assertEquals(sortedList?.get(1)?.thumbsDown, 19)
+        assertEquals(19, sortedList?.get(1)?.thumbsDown)
         assertNotNull(sortedList?.get(2))
-        assertEquals(sortedList?.get(2)?.thumbsDown, 18)
+        assertEquals(18, sortedList?.get(2)?.thumbsDown)
     }
 
     private fun createSuccessfulSearchResponse(): SearchResult {

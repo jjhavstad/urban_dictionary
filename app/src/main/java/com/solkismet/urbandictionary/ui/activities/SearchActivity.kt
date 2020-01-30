@@ -20,7 +20,6 @@ import com.solkismet.urbandictionary.ui.adapters.SearchListAdapter
 import com.solkismet.urbandictionary.ui.extensions.withColor
 import com.solkismet.urbandictionary.ui.utils.NetworkListenerHelper
 import com.solkismet.urbandictionary.viewmodels.SearchViewModel
-import io.reactivex.Completable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -28,8 +27,7 @@ class SearchActivity : AppCompatActivity(),
     SearchViewModel.OnItemClicked,
     SearchViewModel.OnRefreshListener,
     SearchViewModel.OnSortByThumbsUpClicked,
-    SearchViewModel.OnSortByThumbsDownClicked,
-    SearchViewModel.OnSearchAction {
+    SearchViewModel.OnSortByThumbsDownClicked {
 
     private var binding: ActivityMainBinding? = null
     private var viewModel: SearchViewModel? = null
@@ -51,7 +49,6 @@ class SearchActivity : AppCompatActivity(),
     override fun onDestroy() {
         super.onDestroy()
         unregisterNetworkConnectivityListener()
-        viewModel?.onSearchAction = null
     }
 
     override fun click(wordDetail: WordDetail) {
@@ -76,7 +73,7 @@ class SearchActivity : AppCompatActivity(),
         viewModel?.refreshSearch()
     }
 
-    override fun setThumbsUpSelected() {
+    private fun setThumbsUpSelected() {
         binding?.sortSearchThumbsDownImageview?.setColorFilter(
             ContextCompat.getColor(this, R.color.colorPrimary)
         )
@@ -86,7 +83,7 @@ class SearchActivity : AppCompatActivity(),
         )
     }
 
-    override fun setThumbsDownSelected() {
+    private fun setThumbsDownSelected() {
         binding?.sortSearchThumbsDownImageview?.setColorFilter(
             ContextCompat.getColor(this, R.color.colorAccent)
         )
@@ -96,7 +93,7 @@ class SearchActivity : AppCompatActivity(),
         )
     }
 
-    override fun clearSort() {
+    private fun clearSort() {
         binding?.sortSearchThumbsUpImageview?.setColorFilter(
             ContextCompat.getColor(this.applicationContext, R.color.colorPrimary)
         )
@@ -106,7 +103,7 @@ class SearchActivity : AppCompatActivity(),
         )
     }
 
-    override fun showError() {
+    private fun showError() {
         binding?.root?.let { _rootView ->
             Snackbar.make(
                 _rootView,
@@ -120,11 +117,11 @@ class SearchActivity : AppCompatActivity(),
         }
     }
 
-    override fun setIsRefreshing(refreshing: Boolean) {
+    private fun setIsRefreshing(refreshing: Boolean) {
         binding?.refreshSearchListView?.isRefreshing = refreshing
     }
 
-    override fun updateList(list: List<WordDetail>?) {
+    private fun updateList(list: List<WordDetail>?) {
         (binding?.searchListView?.adapter as SearchListAdapter).apply {
             submitList(
                 mutableListOf<WordDetail>().apply {
@@ -136,34 +133,41 @@ class SearchActivity : AppCompatActivity(),
         }
     }
 
-    override fun saveList(list: List<WordDetail>?) {
-        viewModel?.disposables?.add(
-            Completable.fromRunnable {
-                list?.forEach { _wordDetail ->
-                    viewModel?.saveWord(_wordDetail)
-                }
-            }.subscribeOn(Schedulers.io()).subscribe()
-        )
+    private fun saveList() {
+        viewModel?.saveList()?.subscribeOn(Schedulers.io())?.subscribe()?.let {
+            viewModel?.disposables?.add(it)
+        }
     }
 
-    override fun showStartSearch() {
+    private fun showStartSearch() {
         empty_search_results.visibility = View.VISIBLE
         empty_search_results.text = getString(R.string.search_input_for_results)
     }
 
-    override fun showEmptySearchResults() {
+    private fun showEmptySearchResults() {
         empty_search_results.visibility = View.VISIBLE
         empty_search_results.text = getString(R.string.search_no_results)
     }
 
-    override fun hideEmptySearchResults() {
+    private fun hideEmptySearchResults() {
         empty_search_results.visibility = View.GONE
     }
 
     private fun initViewModel() {
         viewModel = ViewModelProviders.of(this).get(SearchViewModel::class.java)
 
-        viewModel?.onSearchAction = this
+        viewModel?.getSearchActionEvent()?.observe(this, Observer {
+            when (it) {
+                SearchViewModel.OnSearchAction.CLEAR_SORT -> clearSort()
+                SearchViewModel.OnSearchAction.SHOW_ERROR -> showError()
+                SearchViewModel.OnSearchAction.SET_IS_REFRESHING -> setIsRefreshing(true)
+                SearchViewModel.OnSearchAction.SET_IS_NOT_REFRESHING -> setIsRefreshing(false)
+                SearchViewModel.OnSearchAction.SAVE_LIST -> saveList()
+                SearchViewModel.OnSearchAction.SHOW_START_SEARCH -> showStartSearch()
+                SearchViewModel.OnSearchAction.SHOW_EMPTY_SEARCH_RESULTS -> showEmptySearchResults()
+                SearchViewModel.OnSearchAction.HIDE_EMPTY_SEARCH_RESULTS -> hideEmptySearchResults()
+            }
+        })
 
         viewModel?.getSearchResult()?.observe(this, Observer { _data ->
             setSearchResult(_data)
@@ -247,6 +251,7 @@ class SearchActivity : AppCompatActivity(),
     }
 
     private fun setSearchResult(data: SearchResult?) {
-        viewModel?.handleSearchResults(data)
+        updateList(data?.list)
+        viewModel?.handleSearchResults()
     }
 }
