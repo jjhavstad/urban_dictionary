@@ -3,7 +3,6 @@ package com.solkismet.urbandictionary.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.solkismet.urbandictionary.data.db.WordDetailDao
 import com.solkismet.urbandictionary.data.models.SearchResult
 import com.solkismet.urbandictionary.data.models.WordDetail
@@ -12,9 +11,7 @@ import io.reactivex.disposables.CompositeDisposable
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
-class SearchViewModel(
-    private val onSearchAction: OnSearchAction
-) : ViewModel(), KoinComponent {
+class SearchViewModel: ViewModel(), KoinComponent {
 
     interface OnItemClicked {
         fun click(wordDetail: WordDetail)
@@ -38,8 +35,8 @@ class SearchViewModel(
         fun clearSort()
         fun showError()
         fun setIsRefreshing(refreshing: Boolean)
-        fun updateList(list: MutableList<WordDetail>?)
-        fun saveList(list: MutableList<WordDetail>?)
+        fun updateList(list: List<WordDetail>?)
+        fun saveList(list: List<WordDetail>?)
         fun showStartSearch()
         fun showEmptySearchResults()
         fun hideEmptySearchResults()
@@ -47,24 +44,16 @@ class SearchViewModel(
 
     private val searchResult = MutableLiveData<SearchResult>()
     var online: Boolean = true
+    var onSearchAction: OnSearchAction? = null
     val disposables = CompositeDisposable()
     private val searchService: SearchService by inject()
     private val wordDetailDao: WordDetailDao by inject()
     private var currentSearchTerm: String? = null
 
-    class Factory(
-        private val onSearchAction: OnSearchAction
-    ) : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-            return SearchViewModel(onSearchAction) as T
-        }
-    }
-
     fun processSearchQuery(query: String) {
         currentSearchTerm = query
         if (query.isEmpty()) {
-            onSearchAction.clearSort()
+            onSearchAction?.clearSort()
             setSearchResult(null)
         } else {
             searchTerm(query)
@@ -83,15 +72,15 @@ class SearchViewModel(
 
     fun handleSearchResults(data: SearchResult?) {
         data?.let { _searchResult ->
-            onSearchAction.updateList(_searchResult.list)
+            onSearchAction?.updateList(_searchResult.list)
             if (_searchResult.list.isEmpty()) {
-                onSearchAction.showEmptySearchResults()
+                onSearchAction?.showEmptySearchResults()
             } else {
-                onSearchAction.hideEmptySearchResults()
+                onSearchAction?.hideEmptySearchResults()
             }
         } ?: run {
-            onSearchAction.updateList(null)
-            onSearchAction.showStartSearch()
+            onSearchAction?.updateList(null)
+            onSearchAction?.showStartSearch()
         }
     }
 
@@ -103,43 +92,37 @@ class SearchViewModel(
         return searchResult
     }
 
-    fun sortResultsByThumbsUp(): List<WordDetail>? {
-        return searchResult.value?.let { _searchResult ->
-            mutableListOf<WordDetail>().apply {
-                addAll(_searchResult.list)
-                sortByDescending { _wordDetail ->
-                    _wordDetail.thumbsUp
-                }
+    fun sortResultsByThumbsUp(): SearchResult? {
+        return searchResult.value?.apply {
+            list.sortByDescending { _wordDetail ->
+                _wordDetail.thumbsUp
             }
         }
     }
 
-    fun sortResultsByThumbsDown(): List<WordDetail>? {
-        return searchResult.value?.let { _searchResult ->
-            mutableListOf<WordDetail>().apply {
-                addAll(_searchResult.list)
-                sortByDescending { _wordDetail ->
-                    _wordDetail.thumbsDown
-                }
+    fun sortResultsByThumbsDown(): SearchResult? {
+        return searchResult.value?.apply {
+            list.sortByDescending { _wordDetail ->
+                _wordDetail.thumbsDown
             }
         }
     }
 
     private fun searchTerm(term: String) {
-        onSearchAction.clearSort()
-        onSearchAction.setIsRefreshing(true)
+        onSearchAction?.clearSort()
+        onSearchAction?.setIsRefreshing(true)
         disposables.add(
             when (online) {
                 true -> searchService.search(term).subscribe(
                     {
                         if (term == currentSearchTerm) {
-                            onSearchAction.saveList(it.list)
+                            onSearchAction?.saveList(it.list)
                             setSearchResult(it)
                         }
-                        onSearchAction.setIsRefreshing(false)
+                        onSearchAction?.setIsRefreshing(false)
                     }, {
-                        onSearchAction.setIsRefreshing(false)
-                        onSearchAction.showError()
+                        onSearchAction?.setIsRefreshing(false)
+                        onSearchAction?.showError()
                     }
                 )
                 false -> wordDetailDao.searchForWord(term).subscribe(
@@ -147,11 +130,11 @@ class SearchViewModel(
                         if (term == currentSearchTerm) {
                             setSearchResult(SearchResult(it))
                         }
-                        onSearchAction.setIsRefreshing(false)
+                        onSearchAction?.setIsRefreshing(false)
                     },
                     {
-                        onSearchAction.setIsRefreshing(false)
-                        onSearchAction.showError()
+                        onSearchAction?.setIsRefreshing(false)
+                        onSearchAction?.showError()
                     }
                 )
             }

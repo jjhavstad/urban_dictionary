@@ -51,6 +51,7 @@ class SearchActivity : AppCompatActivity(),
     override fun onDestroy() {
         super.onDestroy()
         unregisterNetworkConnectivityListener()
+        viewModel?.onSearchAction = null
     }
 
     override fun click(wordDetail: WordDetail) {
@@ -59,14 +60,14 @@ class SearchActivity : AppCompatActivity(),
 
     override fun sortByThumbsUp() {
         viewModel?.sortResultsByThumbsUp()?.let { _sortedSearchResult ->
-            setSearchResult(SearchResult(_sortedSearchResult.toMutableList()))
+            setSearchResult(_sortedSearchResult)
             setThumbsUpSelected()
         }
     }
 
     override fun sortByThumbsDown() {
         viewModel?.sortResultsByThumbsDown()?.let { _sortedSearchResult ->
-            setSearchResult(SearchResult(_sortedSearchResult.toMutableList()))
+            setSearchResult(_sortedSearchResult)
             setThumbsDownSelected()
         }
     }
@@ -74,7 +75,6 @@ class SearchActivity : AppCompatActivity(),
     override fun refreshSearch() {
         viewModel?.refreshSearch()
     }
-
 
     override fun setThumbsUpSelected() {
         binding?.sortSearchThumbsDownImageview?.setColorFilter(
@@ -124,13 +124,19 @@ class SearchActivity : AppCompatActivity(),
         binding?.refreshSearchListView?.isRefreshing = refreshing
     }
 
-    override fun updateList(list: MutableList<WordDetail>?) {
+    override fun updateList(list: List<WordDetail>?) {
         (binding?.searchListView?.adapter as SearchListAdapter).apply {
-            submitList(list)
+            submitList(
+                mutableListOf<WordDetail>().apply {
+                    list?.forEach {
+                        add(it)
+                    }
+                }
+            )
         }
     }
 
-    override fun saveList(list: MutableList<WordDetail>?) {
+    override fun saveList(list: List<WordDetail>?) {
         viewModel?.disposables?.add(
             Completable.fromRunnable {
                 list?.forEach { _wordDetail ->
@@ -155,10 +161,9 @@ class SearchActivity : AppCompatActivity(),
     }
 
     private fun initViewModel() {
-        viewModel = ViewModelProviders.of(
-            this,
-            SearchViewModel.Factory(this)
-        ).get(SearchViewModel::class.java)
+        viewModel = ViewModelProviders.of(this).get(SearchViewModel::class.java)
+
+        viewModel?.onSearchAction = this
 
         viewModel?.getSearchResult()?.observe(this, Observer { _data ->
             setSearchResult(_data)

@@ -272,7 +272,7 @@ class SearchViewModelTest : KoinTest {
         viewModel.processSearchQuery("sweet")
 
         // WHEN
-        val sortedList = viewModel.sortResultsByThumbsUp()
+        val sortedList = viewModel.sortResultsByThumbsUp()?.list
 
         // THEN
         assertNotNull(sortedList)
@@ -295,7 +295,7 @@ class SearchViewModelTest : KoinTest {
         viewModel.processSearchQuery("sweet")
 
         // WHEN
-        val sortedList = viewModel.sortResultsByThumbsDown()
+        val sortedList = viewModel.sortResultsByThumbsDown()?.list
 
         // THEN
         assertNotNull(sortedList)
