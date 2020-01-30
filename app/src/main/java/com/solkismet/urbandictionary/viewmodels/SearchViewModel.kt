@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.solkismet.urbandictionary.data.models.SearchResult
 import com.solkismet.urbandictionary.data.models.WordDetail
 import com.solkismet.urbandictionary.data.repo.WordDetailRepository
+import com.solkismet.urbandictionary.ui.extensions.postToQueue
 import io.reactivex.Completable
 import io.reactivex.disposables.CompositeDisposable
 import org.koin.core.KoinComponent
@@ -120,13 +121,14 @@ class SearchViewModel: ViewModel(), KoinComponent {
                     if (term == currentSearchTerm) {
                         setSearchResult(it)
                         if (online) {
-                            searchActionEvent.postValue(OnSearchAction.SAVE_LIST)
+                            searchActionEvent.postToQueue(OnSearchAction.SAVE_LIST)
                         }
                     }
-                    searchActionEvent.postValue(OnSearchAction.SET_IS_NOT_REFRESHING)
+                    searchActionEvent.postToQueue(OnSearchAction.SET_IS_NOT_REFRESHING)
+                    searchActionEvent.postToQueue(OnSearchAction.SHOW_ERROR)
                 }, {
-                    searchActionEvent.postValue(OnSearchAction.SET_IS_NOT_REFRESHING)
-                    searchActionEvent.postValue(OnSearchAction.SHOW_ERROR)
+                    searchActionEvent.postToQueue(OnSearchAction.SET_IS_NOT_REFRESHING)
+                    searchActionEvent.postToQueue(OnSearchAction.SHOW_ERROR)
                 }
             )
         )

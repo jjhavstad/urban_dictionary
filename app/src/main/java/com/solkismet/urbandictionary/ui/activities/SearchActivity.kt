@@ -238,6 +238,14 @@ class SearchActivity : AppCompatActivity(),
 
     private fun registerNetworkConnectivityListener() {
         val connectivityManager: ConnectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+
+        viewModel?.online = connectivityManager.allNetworks.any {
+            connectivityManager.getNetworkCapabilities(
+                it
+            )?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ?: false
+        }
+
         networkCallback = NetworkListenerHelper.registerNetworkStateChangeListener(
             connectivityManager,
             { viewModel?.online = true },
